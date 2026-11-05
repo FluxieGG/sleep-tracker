@@ -1,14 +1,19 @@
-import { Moon, BedDouble } from 'lucide-react'
+import { Moon } from 'lucide-react'
 
 export default function Header({ isSleeping, onNavigateTonight }) {
   return (
     <header className="sticky top-0 z-20 backdrop-blur-md bg-slate-900/80 border-b border-slate-800/80 px-5 py-3.5 flex items-center justify-between">
-      <div className="flex items-center gap-2.5">
+      <button
+        type="button"
+        onClick={onNavigateTonight}
+        className="flex items-center gap-2.5 text-left group active:scale-[0.98] transition cursor-pointer"
+        aria-label="Go to Tonight (Home)"
+      >
         <div
           className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all ${
             isSleeping
               ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 animate-pulse'
-              : 'bg-indigo-500/20 border-indigo-500/30 text-indigo-400'
+              : 'bg-indigo-500/20 border-indigo-500/30 text-indigo-400 group-hover:bg-indigo-500/30'
           }`}
         >
           <Moon className="w-5 h-5" />
@@ -27,15 +32,6 @@ export default function Header({ isSleeping, onNavigateTonight }) {
           </div>
           <p className="text-xs text-slate-400 mt-1">Sleep Companion</p>
         </div>
-      </div>
-
-      <button
-        type="button"
-        onClick={onNavigateTonight}
-        className="w-9 h-9 rounded-full bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-300 active:scale-95 transition cursor-pointer"
-        aria-label="Tonight"
-      >
-        <BedDouble className="w-4 h-4 text-indigo-300" />
       </button>
     </header>
   )
