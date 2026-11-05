@@ -1,23 +1,35 @@
-import { Clock, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { useState } from 'react'
+import { Clock, AlertCircle, CheckCircle2, X } from 'lucide-react'
 import { formatDuration } from '../utils/timeUtils'
+import DeleteConfirmModal from '../components/DeleteConfirmModal'
 
 export default function LogPage({
   sleepLogs,
   allWeeks,
   logWeekFilter,
   onChangeFilter,
+  onDeleteLog,
 }) {
+  const [sessionPendingDelete, setSessionPendingDelete] = useState(null)
+
   const filteredLogs =
     logWeekFilter === 'all'
       ? sleepLogs
       : sleepLogs.filter((l) => l.weekId === logWeekFilter)
+
+  const handleConfirmDelete = (id) => {
+    if (onDeleteLog) {
+      onDeleteLog(id)
+    }
+    setSessionPendingDelete(null)
+  }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-base font-semibold text-white">Sleep Log History</h2>
-          <p className="text-xs text-slate-400">3 weeks of sessions & outlined disruptions</p>
+          <p className="text-xs text-slate-400">Manage recorded sessions & outlined disruptions</p>
         </div>
         <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700/60">
           {filteredLogs.length} nights
@@ -68,10 +80,10 @@ export default function LogPage({
             return (
               <div
                 key={log.id}
-                className={`rounded-2xl bg-slate-900/90 p-4 space-y-3 transition ${
+                className={`rounded-2xl bg-slate-900/90 p-4 space-y-3 transition relative group ${
                   hasDisruptions
                     ? 'border-2 border-rose-500/40 shadow-lg shadow-rose-950/20'
-                    : 'border border-slate-800/80'
+                    : 'border border-slate-800/80 hover:border-slate-700/80'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -91,9 +103,23 @@ export default function LogPage({
                       {log.start12} → {log.end12}
                     </p>
                   </div>
-                  <span className="text-sm font-bold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-xl border border-indigo-500/20 tabular-nums shrink-0">
-                    {formatDuration(log.duration)}
-                  </span>
+
+                  {/* Duration Pill and Step-1 Delete "X" Trigger */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-sm font-bold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-xl border border-indigo-500/20 tabular-nums">
+                      {formatDuration(log.duration)}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => setSessionPendingDelete(log)}
+                      className="p-1.5 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 active:scale-95 transition cursor-pointer"
+                      title="Remove session"
+                      aria-label={`Remove sleep session for ${log.fullDay}`}
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Outlined Disruption Events Block */}
@@ -145,6 +171,14 @@ export default function LogPage({
           })}
         </div>
       )}
+
+      {/* Step 2: Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={Boolean(sessionPendingDelete)}
+        session={sessionPendingDelete}
+        onCancel={() => setSessionPendingDelete(null)}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   )
 }

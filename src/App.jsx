@@ -232,6 +232,43 @@ export default function App() {
     setLastFinishedSummary(newLog)
   }
 
+  // DELETE A LOG (2-step confirmed)
+  const handleDeleteLog = (logId) => {
+    const target = sleepLogs.find((l) => l.id === logId)
+    setSleepLogs((prev) => prev.filter((l) => l.id !== logId))
+
+    if (target) {
+      setAllWeeks((prevWeeks) =>
+        prevWeeks.map((week) => ({
+          ...week,
+          days: week.days.map((day) => {
+            const matchesId = day.id === target.id
+            const matchesDayAndWeek =
+              day.day.toLowerCase() === target.day?.toLowerCase() &&
+              (target.weekId ? week.id === target.weekId : week.id === 'week-current')
+            if (matchesId || matchesDayAndWeek) {
+              return {
+                ...day,
+                start: '00:00',
+                end: '00:00',
+                startHour: 22,
+                endHour: 22,
+                duration: 0,
+                disruptions: [],
+                isRealSession: false,
+              }
+            }
+            return day
+          }),
+        }))
+      )
+    }
+
+    if (lastFinishedSummary?.id === logId) {
+      setLastFinishedSummary(null)
+    }
+  }
+
   // Restore all 3 weeks of demo seed data
   const handleRestoreDemoData = () => {
     localStorage.removeItem('slumber_sleep_logs_v2')
@@ -313,6 +350,7 @@ export default function App() {
               allWeeks={allWeeks}
               logWeekFilter={logWeekFilter}
               onChangeFilter={setLogWeekFilter}
+              onDeleteLog={handleDeleteLog}
             />
           )}
 
