@@ -24,9 +24,7 @@ export default function SettingsPage({
               </p>
             </div>
           </div>
-          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-800 text-[var(--accent-text)] border border-slate-700/60">
-            {THEMES.find((t) => t.id === currentTheme)?.name || 'Custom'}
-          </span>
+
         </div>
 
         {/* 4 Theme Selectors */}
