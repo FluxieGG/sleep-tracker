@@ -1,4 +1,4 @@
-import { Database } from 'lucide-react'
+import { Database, Palette } from 'lucide-react'
 
 export default function SettingsPage({
   sleepLogsCount,
@@ -7,6 +7,7 @@ export default function SettingsPage({
 }) {
   return (
     <div className="space-y-4">
+      {/* General App Settings */}
       <div className="rounded-2xl bg-slate-900/90 border border-slate-800/80 p-5 space-y-4">
         <h3 className="text-sm font-semibold text-white">App Settings</h3>
         <div className="space-y-3 text-xs">
@@ -22,6 +23,33 @@ export default function SettingsPage({
             <span className="text-slate-300">Seeded Nights</span>
             <span className="text-slate-400">{sleepLogsCount} sessions loaded</span>
           </div>
+        </div>
+      </div>
+
+      {/* Themes Area (Blank space ready to be filled) */}
+      <div className="rounded-2xl bg-slate-900/90 border border-slate-800/80 p-5 space-y-3.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+              <Palette className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-white">Themes</h3>
+              <p className="text-[11px] text-slate-400">Appearance and color schemes</p>
+            </div>
+          </div>
+          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-800 text-indigo-300 border border-slate-700/60">
+            Customizer
+          </span>
+        </div>
+
+        {/* Blank drop-in canvas for themes */}
+        <div className="rounded-xl border border-dashed border-slate-800 p-6 text-center text-xs text-slate-500 min-h-[110px] flex flex-col items-center justify-center gap-1.5">
+          <Palette className="w-5 h-5 text-slate-600 mb-0.5" />
+          <span className="text-slate-400 font-medium">Theme selection area</span>
+          <span className="text-[11px] text-slate-500">
+            Reserved for theme presets and custom color styles
+          </span>
         </div>
       </div>
 
