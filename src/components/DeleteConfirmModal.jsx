@@ -49,7 +49,7 @@ export default function DeleteConfirmModal({
             <span className="font-semibold text-white">
               {session.fullDay}, {session.dateString}
             </span>
-            <span className="font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-lg border border-indigo-500/20 text-[11px] tabular-nums">
+            <span className="font-bold text-[var(--accent-text)] bg-[var(--accent-subtle)] px-2 py-0.5 rounded-lg border border-[var(--accent-border)] text-[11px] tabular-nums">
               {formatDuration(session.duration)}
             </span>
           </div>

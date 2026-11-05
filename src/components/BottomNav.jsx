@@ -14,7 +14,7 @@ export default function BottomNav({ activeTab, onChangeTab }) {
                 onClick={() => onChangeTab(tab.id)}
                 className={`w-full py-2 rounded-xl flex flex-col items-center justify-center gap-1 transition cursor-pointer ${
                   isActive
-                    ? 'text-indigo-400 bg-indigo-500/10'
+                    ? 'text-[var(--accent-text)] bg-[var(--accent-subtle)]'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >

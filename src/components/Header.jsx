@@ -13,7 +13,7 @@ export default function Header({ isSleeping, onNavigateTonight }) {
           className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all ${
             isSleeping
               ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 animate-pulse'
-              : 'bg-indigo-500/20 border-indigo-500/30 text-indigo-400 group-hover:bg-indigo-500/30'
+              : 'bg-[var(--accent-subtle)] border-[var(--accent-border)] text-[var(--accent-text)] group-hover:opacity-90'
           }`}
         >
           <Moon className="w-5 h-5" />

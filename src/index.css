@@ -1,5 +1,54 @@
 @import "tailwindcss";
 
+:root,
+[data-theme="indigo"] {
+  --accent: #6366f1;
+  --accent-hover: #4f46e5;
+  --accent-text: #818cf8;
+  --accent-subtle: rgba(99, 102, 241, 0.15);
+  --accent-border: rgba(99, 102, 241, 0.35);
+  --accent-btn-text: #ffffff;
+  --accent-gradient-from: #6366f1;
+  --accent-gradient-to: #8b5cf6;
+  --accent-shadow: rgba(99, 102, 241, 0.3);
+}
+
+[data-theme="amber"] {
+  --accent: #FFCF56;
+  --accent-hover: #f3be3b;
+  --accent-text: #FFCF56;
+  --accent-subtle: rgba(255, 207, 86, 0.16);
+  --accent-border: rgba(255, 207, 86, 0.4);
+  --accent-btn-text: #0f172a;
+  --accent-gradient-from: #FFCF56;
+  --accent-gradient-to: #f59e0b;
+  --accent-shadow: rgba(255, 207, 86, 0.3);
+}
+
+[data-theme="ember"] {
+  --accent: #BC5B16;
+  --accent-hover: #a54b0c;
+  --accent-text: #fb923c;
+  --accent-subtle: rgba(188, 91, 22, 0.2);
+  --accent-border: rgba(188, 91, 22, 0.45);
+  --accent-btn-text: #ffffff;
+  --accent-gradient-from: #BC5B16;
+  --accent-gradient-to: #ea580c;
+  --accent-shadow: rgba(188, 91, 22, 0.35);
+}
+
+[data-theme="teal"] {
+  --accent: #004643;
+  --accent-hover: #005a56;
+  --accent-text: #2dd4bf;
+  --accent-subtle: rgba(45, 212, 191, 0.16);
+  --accent-border: rgba(45, 212, 191, 0.4);
+  --accent-btn-text: #ffffff;
+  --accent-gradient-from: #004643;
+  --accent-gradient-to: #0d9488;
+  --accent-shadow: rgba(13, 148, 136, 0.35);
+}
+
 /* Safe area adjustments and custom scrollbar hiding for mobile feel */
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {

@@ -32,14 +32,14 @@ export default function TonightPage({
       <div
         className={`rounded-2xl border p-5 shadow-xl transition-all ${
           isSleeping
-            ? 'bg-gradient-to-br from-indigo-950 via-slate-900 to-amber-950/30 border-amber-500/30'
-            : 'bg-gradient-to-br from-indigo-950/90 via-slate-900 to-slate-900 border-indigo-500/20'
+            ? 'bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/30 border-amber-500/30'
+            : 'bg-gradient-to-br from-slate-900 via-slate-900 to-slate-900 border-[var(--accent-border)]'
         }`}
       >
         <div className="flex items-center justify-between mb-4">
           <span
             className={`text-xs font-medium uppercase tracking-wider flex items-center gap-1.5 ${
-              isSleeping ? 'text-amber-400' : 'text-indigo-400'
+              isSleeping ? 'text-amber-400' : 'text-[var(--accent-text)]'
             }`}
           >
             {isSleeping ? (
@@ -67,9 +67,9 @@ export default function TonightPage({
             <button
               type="button"
               onClick={onStartSleep}
-              className="w-full py-3.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white font-medium text-sm shadow-lg shadow-indigo-600/30 transition flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3.5 px-4 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] active:scale-[0.98] text-[var(--accent-btn-text)] font-semibold text-sm shadow-lg shadow-[var(--accent-shadow)] transition flex items-center justify-center gap-2 cursor-pointer"
             >
-              <Moon className="w-4 h-4 fill-white" />
+              <Moon className="w-4 h-4 fill-current" />
               Start Sleep Session
             </button>
           </div>
@@ -81,7 +81,7 @@ export default function TonightPage({
               <div className="text-4xl font-extrabold text-white tracking-tight tabular-nums mt-1 font-mono">
                 {formatElapsed(elapsedMs)}
               </div>
-              <p className="text-xs text-indigo-300 mt-2 flex items-center gap-1.5">
+              <p className="text-xs text-[var(--accent-text)] mt-2 flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5" />
                 Started at{' '}
                 <span className="font-semibold text-white">
@@ -168,7 +168,7 @@ export default function TonightPage({
           <button
             type="button"
             onClick={onViewLog}
-            className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-0.5 cursor-pointer"
+            className="text-xs text-[var(--accent-text)] hover:opacity-80 flex items-center gap-0.5 cursor-pointer"
           >
             See All ({sleepLogs.length}) <ChevronRight className="w-3.5 h-3.5" />
           </button>
@@ -201,7 +201,7 @@ export default function TonightPage({
                         {item.start12} → {item.end12}
                       </p>
                     </div>
-                    <span className="font-semibold text-indigo-300 px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 tabular-nums">
+                    <span className="font-semibold text-[var(--accent-text)] px-2.5 py-1 rounded-lg bg-[var(--accent-subtle)] border border-[var(--accent-border)] tabular-nums">
                       {formatDuration(item.duration)}
                     </span>
                   </div>

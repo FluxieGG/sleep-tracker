@@ -17,7 +17,7 @@ export default function GanttChart({
       <div className="flex items-center justify-between mb-3">
         <div>
           <h2 className="text-sm font-semibold text-white flex items-center gap-1.5">
-            <Calendar className="w-4 h-4 text-indigo-400" />
+            <Calendar className="w-4 h-4 text-[var(--accent-text)]" />
             {weekLabel} Schedule
           </h2>
           <p className="text-[11px] text-slate-400 mt-0.5">
@@ -73,7 +73,7 @@ export default function GanttChart({
               type="button"
               onClick={() => onSelectDay(item)}
               className={`w-full grid grid-cols-[38px_1fr_54px] items-center gap-2 py-1 px-1.5 -mx-1.5 rounded-xl text-left transition cursor-pointer ${
-                isSelected ? 'bg-slate-800/70 ring-1 ring-indigo-500/40' : 'hover:bg-slate-800/40'
+                isSelected ? 'bg-slate-800/70 ring-1 ring-[var(--accent-border)]' : 'hover:bg-slate-800/40'
               }`}
             >
               <span className="text-xs font-semibold text-slate-300 flex items-center gap-1">
@@ -101,7 +101,7 @@ export default function GanttChart({
                 {/* Midnight Dashed Line */}
                 <div
                   style={{ left: `${(5 / CHART_TOTAL_HOURS) * 100}%` }}
-                  className="absolute top-0 bottom-0 w-px border-l border-dashed border-indigo-500/30"
+                  className="absolute top-0 bottom-0 w-px border-l border-dashed border-[var(--accent-border)]"
                   title="Midnight"
                 />
 
@@ -114,11 +114,11 @@ export default function GanttChart({
                     }}
                     className={`absolute top-1 bottom-1 rounded-md shadow-sm transition-all flex items-center justify-center overflow-hidden ${
                       meetsGoal
-                        ? 'bg-gradient-to-r from-indigo-500 to-violet-500 shadow-indigo-500/20'
-                        : 'bg-gradient-to-r from-indigo-500/80 to-sky-500/80'
+                        ? 'bg-gradient-to-r from-[var(--accent-gradient-from)] to-[var(--accent-gradient-to)] shadow-sm shadow-[var(--accent-shadow)]'
+                        : 'bg-gradient-to-r from-[var(--accent-gradient-from)] to-[var(--accent-gradient-to)] opacity-75'
                     }`}
                   >
-                    <span className="text-[9px] font-semibold text-white/95 truncate px-1.5">
+                    <span className="text-[9px] font-semibold text-[var(--accent-btn-text)] truncate px-1.5">
                       {item.start}–{item.end}
                     </span>
                   </div>
@@ -175,7 +175,7 @@ export default function GanttChart({
                 {selectedDay.start} – {selectedDay.end}
               </span>
             </div>
-            <span className="font-semibold text-indigo-400 tabular-nums">
+            <span className="font-semibold text-[var(--accent-text)] tabular-nums">
               {formatDuration(selectedDay.duration ?? selectedDay.endHour - selectedDay.startHour)}
             </span>
           </div>

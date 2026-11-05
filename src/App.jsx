@@ -27,6 +27,25 @@ import SettingsPage from './pages/SettingsPage'
 export default function App() {
   const [activeTab, setActiveTab] = useState('tonight')
 
+  // Accent theme: 'amber' (Bright Amber), 'ember' (Autumn Ember), 'teal' (Pine Teal), 'indigo' (Slumber Indigo)
+  const [currentTheme, setCurrentTheme] = useState(() => {
+    try {
+      return localStorage.getItem('slumber_theme') || 'amber'
+    } catch {
+      return 'amber'
+    }
+  })
+
+  // Synchronize active theme attribute on <html> element and save preference
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', currentTheme)
+    try {
+      localStorage.setItem('slumber_theme', currentTheme)
+    } catch {
+      // ignore
+    }
+  }, [currentTheme])
+
   // Active sleep session: null or { startTime: number, disruptions: [] }
   const [activeSession, setActiveSession] = useState(() => {
     try {
@@ -371,6 +390,8 @@ export default function App() {
 
           {activeTab === 'settings' && (
             <SettingsPage
+              currentTheme={currentTheme}
+              onSelectTheme={setCurrentTheme}
               sleepLogsCount={sleepLogs.length}
               onRestoreDemoData={handleRestoreDemoData}
               onClearForRelease={handleClearForRelease}

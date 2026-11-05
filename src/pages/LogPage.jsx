@@ -43,7 +43,7 @@ export default function LogPage({
           onClick={() => onChangeFilter('all')}
           className={`px-3 py-1.5 rounded-xl text-xs font-medium shrink-0 transition cursor-pointer ${
             logWeekFilter === 'all'
-              ? 'bg-indigo-600 text-white'
+              ? 'bg-[var(--accent)] text-[var(--accent-btn-text)] shadow-sm'
               : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'
           }`}
         >
@@ -56,7 +56,7 @@ export default function LogPage({
             onClick={() => onChangeFilter(w.id)}
             className={`px-3 py-1.5 rounded-xl text-xs font-medium shrink-0 transition cursor-pointer ${
               logWeekFilter === w.id
-                ? 'bg-indigo-600 text-white'
+                ? 'bg-[var(--accent)] text-[var(--accent-btn-text)] shadow-sm'
                 : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -106,7 +106,7 @@ export default function LogPage({
 
                   {/* Duration Pill and Step-1 Delete "X" Trigger */}
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-sm font-bold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-xl border border-indigo-500/20 tabular-nums">
+                    <span className="text-sm font-bold text-[var(--accent-text)] bg-[var(--accent-subtle)] px-2.5 py-1 rounded-xl border border-[var(--accent-border)] tabular-nums">
                       {formatDuration(log.duration)}
                     </span>
 
