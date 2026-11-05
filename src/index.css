@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+/* Safe area adjustments and custom scrollbar hiding for mobile feel */
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
