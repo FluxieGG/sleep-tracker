@@ -4,7 +4,8 @@ import { THEMES } from '../constants/themeConstants'
 export default function SettingsPage({
   currentTheme,
   onSelectTheme,
-  sleepLogsCount,
+  sleepLogsCount = 0,
+  napLogsCount = 0,
   onRestoreDemoData,
   onClearForRelease,
 }) {
@@ -105,7 +106,9 @@ export default function SettingsPage({
           </div>
           <div className="flex items-center justify-between py-2">
             <span className="text-slate-300">Seeded Nights</span>
-            <span className="text-slate-400">{sleepLogsCount} sessions loaded</span>
+            <span className="text-slate-400">
+              {sleepLogsCount} nights • {napLogsCount} naps loaded
+            </span>
           </div>
         </div>
       </div>

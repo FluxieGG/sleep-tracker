@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   SEED_WEEKS,
   INITIAL_SLEEP_LOGS,
+  INITIAL_NAP_LOGS,
   INITIAL_WEEK_DATA,
 } from './data/mockSeedData'
 import {
@@ -10,6 +11,7 @@ import {
   formatTime24To12,
   parseTimeToContinuous,
   getContinuousHours,
+  calculateStreakStats,
 } from './utils/timeUtils'
 
 // Layout & Shared Components
@@ -17,6 +19,7 @@ import Header from './components/Header'
 import BottomNav from './components/BottomNav'
 import SessionConfirmedBanner from './components/SessionConfirmedBanner'
 import DisruptionModal from './components/DisruptionModal'
+import StreakModal from './components/StreakModal'
 
 // Separated Page Views
 import TonightPage from './pages/TonightPage'
@@ -66,6 +69,16 @@ export default function App() {
     }
   })
 
+  // Daytime nap logs history (seeded with sample naps)
+  const [napLogs, setNapLogs] = useState(() => {
+    try {
+      const saved = localStorage.getItem('slumber_nap_logs_v1')
+      return saved ? JSON.parse(saved) : INITIAL_NAP_LOGS
+    } catch {
+      return INITIAL_NAP_LOGS
+    }
+  })
+
   // Multi-week schedule for the Gantt chart (3 weeks)
   const [allWeeks, setAllWeeks] = useState(() => {
     try {
@@ -105,6 +118,10 @@ export default function App() {
 
   // Disruption Modal visibility
   const [isDisruptionModalOpen, setIsDisruptionModalOpen] = useState(false)
+  const [isStreakModalOpen, setIsStreakModalOpen] = useState(false)
+
+  // Sleep streak stats synchronized with sleepLogs
+  const streakStats = useMemo(() => calculateStreakStats(sleepLogs), [sleepLogs])
 
   useEffect(() => {
     if (!activeSession?.startTime) {
@@ -132,6 +149,11 @@ export default function App() {
   // Save logs changes
   useEffect(() => {
     localStorage.setItem('slumber_sleep_logs_v2', JSON.stringify(sleepLogs))
+  }, [sleepLogs])
+
+  // Save nap logs changes
+  useEffect(() => {
+    localStorage.setItem('slumber_nap_logs_v1', JSON.stringify(napLogs))
   }, [sleepLogs])
 
   // Save multi-week schedule changes
@@ -288,11 +310,23 @@ export default function App() {
     }
   }
 
+  // DELETE A NAP
+  const handleDeleteNap = (napId) => {
+    setNapLogs((prev) => prev.filter((n) => n.id !== napId))
+  }
+
+  // ADD A NEW NAP
+  const handleAddNap = (newNap) => {
+    setNapLogs((prev) => [newNap, ...prev])
+  }
+
   // Restore all 3 weeks of demo seed data
   const handleRestoreDemoData = () => {
     localStorage.removeItem('slumber_sleep_logs_v2')
     localStorage.removeItem('slumber_all_weeks_v2')
+    localStorage.removeItem('slumber_nap_logs_v1')
     setSleepLogs(INITIAL_SLEEP_LOGS)
+    setNapLogs(INITIAL_NAP_LOGS)
     setAllWeeks(SEED_WEEKS)
     setSelectedWeekIndex(0)
     setSelectedDay(SEED_WEEKS[0].days[3])
@@ -312,6 +346,7 @@ export default function App() {
       { id: 'sun', day: 'Sun', fullDay: 'Sunday', start: '00:00', end: '00:00', startHour: 22, endHour: 22, duration: 0, disruptions: [] },
     ]
     setSleepLogs([])
+    setNapLogs([])
     setAllWeeks([{ id: 'week-current', label: 'This Week', dateRange: 'Current Week', days: emptyWeek }])
     setSelectedWeekIndex(0)
     setSelectedDay(emptyWeek[0])
@@ -341,6 +376,9 @@ export default function App() {
         <Header
           isSleeping={isSleeping}
           onNavigateTonight={() => setActiveTab('tonight')}
+          activeTab={activeTab}
+          streakStats={streakStats}
+          onOpenStreakModal={() => setIsStreakModalOpen(true)}
         />
 
         {/* Main Scrollable Content Area */}
@@ -360,6 +398,8 @@ export default function App() {
               onRemoveActiveDisruption={handleRemoveActiveDisruption}
               sleepLogs={sleepLogs}
               onViewLog={() => setActiveTab('history')}
+              streakStats={streakStats}
+              onOpenStreakModal={() => setIsStreakModalOpen(true)}
             />
           )}
 
@@ -370,6 +410,9 @@ export default function App() {
               logWeekFilter={logWeekFilter}
               onChangeFilter={setLogWeekFilter}
               onDeleteLog={handleDeleteLog}
+              napLogs={napLogs}
+              onDeleteNap={handleDeleteNap}
+              onAddNap={handleAddNap}
             />
           )}
 
@@ -393,6 +436,7 @@ export default function App() {
               currentTheme={currentTheme}
               onSelectTheme={setCurrentTheme}
               sleepLogsCount={sleepLogs.length}
+              napLogsCount={napLogs.length}
               onRestoreDemoData={handleRestoreDemoData}
               onClearForRelease={handleClearForRelease}
             />
@@ -404,6 +448,13 @@ export default function App() {
           isOpen={isDisruptionModalOpen}
           onClose={() => setIsDisruptionModalOpen(false)}
           onSave={handleSaveDisruption}
+        />
+
+        {/* Sleep Streak Log Modal */}
+        <StreakModal
+          isOpen={isStreakModalOpen}
+          onClose={() => setIsStreakModalOpen(false)}
+          streakStats={streakStats}
         />
 
         {/* Bottom Navigation Bar */}

@@ -11,6 +11,7 @@
   --accent-gradient-from: #6366f1;
   --accent-gradient-to: #8b5cf6;
   --accent-shadow: rgba(99, 102, 241, 0.3);
+  --accent-ring: #6366f1;
 }
 
 [data-theme="amber"] {
@@ -23,6 +24,7 @@
   --accent-gradient-from: #FFCF56;
   --accent-gradient-to: #f59e0b;
   --accent-shadow: rgba(255, 207, 86, 0.3);
+  --accent-ring: #FFCF56;
 }
 
 [data-theme="ember"] {
@@ -35,6 +37,7 @@
   --accent-gradient-from: #BC5B16;
   --accent-gradient-to: #ea580c;
   --accent-shadow: rgba(188, 91, 22, 0.35);
+  --accent-ring: #BC5B16;
 }
 
 [data-theme="teal"] {
@@ -47,6 +50,7 @@
   --accent-gradient-from: #004643;
   --accent-gradient-to: #0d9488;
   --accent-shadow: rgba(13, 148, 136, 0.35);
+  --accent-ring: #2dd4bf;
 }
 
 /* Safe area adjustments and custom scrollbar hiding for mobile feel */
