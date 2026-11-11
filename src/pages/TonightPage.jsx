@@ -6,12 +6,14 @@ import {
   AlertCircle,
   ChevronRight,
   Trash2,
+  Flame,
 } from 'lucide-react'
 import {
   formatElapsed,
   formatTime12,
   formatDuration,
 } from '../utils/timeUtils'
+import MonthCalendar from '../components/MonthCalendar'
 
 export default function TonightPage({
   isSleeping,
@@ -23,6 +25,8 @@ export default function TonightPage({
   onRemoveActiveDisruption,
   sleepLogs,
   onViewLog,
+  streakStats = {},
+  onOpenStreakModal,
 }) {
   const activeDisruptions = activeSession?.disruptions || []
 
@@ -53,7 +57,20 @@ export default function TonightPage({
               </>
             )}
           </span>
-          <span className="text-xs text-slate-400">Goal: 8h 00m</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-400">Goal: 8h 00m</span>
+            {streakStats.currentStreak > 0 && (
+              <button
+                type="button"
+                onClick={onOpenStreakModal}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[var(--accent-subtle)] border border-[var(--accent-border)] text-[var(--accent-text)] text-[11px] font-bold cursor-pointer hover:opacity-85 transition"
+                title="View sleep streak log"
+              >
+                <Flame className="w-3 h-3 fill-current text-[var(--accent-text)]" />
+                <span>{streakStats.currentStreak}d Streak</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {!isSleeping ? (
@@ -153,6 +170,16 @@ export default function TonightPage({
           </div>
         )}
       </div>
+
+      {/* Month-by-Month Sleep Calendar with Theme Ring & Accent Fill */}
+      <MonthCalendar
+        sleepLogs={sleepLogs}
+        isSleeping={isSleeping}
+        activeSession={activeSession}
+        onViewLog={onViewLog}
+        streakStats={streakStats}
+        onOpenStreakModal={onOpenStreakModal}
+      />
 
       {/* Recent Nights List on Tonight */}
       <div className="rounded-2xl bg-slate-900/90 border border-slate-800/80 p-5">

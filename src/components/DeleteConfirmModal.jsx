@@ -26,7 +26,7 @@ export default function DeleteConfirmModal({
             </div>
             <div>
               <h3 className="text-sm font-semibold text-white leading-tight">
-                Delete Sleep Session?
+                {session.napType ? 'Delete Nap Log?' : 'Delete Sleep Session?'}
               </h3>
               <p className="text-[11px] text-slate-400 mt-0.5">
                 Step 2 of 2: Confirm removal
@@ -59,6 +59,11 @@ export default function DeleteConfirmModal({
             <span>
               {session.start12} → {session.end12}
             </span>
+            {session.napType && (
+              <span className="text-[var(--accent-text)] font-medium ml-1">
+                • {session.napType}
+              </span>
+            )}
             {disCount > 0 && (
               <span className="text-rose-300 font-medium ml-1">
                 • {disCount} {disCount === 1 ? 'disruption' : 'disruptions'}
@@ -68,8 +73,9 @@ export default function DeleteConfirmModal({
         </div>
 
         <p className="text-xs text-slate-400 leading-relaxed">
-          Are you sure you want to remove this log? It will be deleted from your
-          history and your weekly stats will recalculate.
+          {session.napType
+            ? 'Are you sure you want to remove this nap log? It will be deleted from your daytime nap history.'
+            : 'Are you sure you want to remove this log? It will be deleted from your history and your weekly stats will recalculate.'}
         </p>
 
         {/* Action Buttons */}
