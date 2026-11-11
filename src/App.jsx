@@ -4,6 +4,10 @@ import {
   INITIAL_SLEEP_LOGS,
   INITIAL_NAP_LOGS,
   INITIAL_WEEK_DATA,
+  DEMO_SEED_WEEKS,
+  DEMO_SLEEP_LOGS,
+  DEMO_NAP_LOGS,
+  CLEAN_WEEK_DATA,
 } from './data/mockSeedData'
 import {
   formatTime24,
@@ -107,6 +111,24 @@ export default function App() {
   // Selected day for the Gantt detail view
   const [selectedDay, setSelectedDay] = useState(() => weekSchedule[3] || weekSchedule[0])
 
+  // Sleep goal target in hours (default: 8.0 hours)
+  const [sleepGoalHours, setSleepGoalHours] = useState(() => {
+    try {
+      const saved = localStorage.getItem('slumber_sleep_goal')
+      return saved ? parseFloat(saved) : 8.0
+    } catch {
+      return 8.0
+    }
+  })
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('slumber_sleep_goal', sleepGoalHours.toString())
+    } catch {
+      // ignore
+    }
+  }, [sleepGoalHours])
+
   // Log tab week filter
   const [logWeekFilter, setLogWeekFilter] = useState('all')
 
@@ -154,7 +176,7 @@ export default function App() {
   // Save nap logs changes
   useEffect(() => {
     localStorage.setItem('slumber_nap_logs_v1', JSON.stringify(napLogs))
-  }, [sleepLogs])
+  }, [napLogs])
 
   // Save multi-week schedule changes
   useEffect(() => {
@@ -320,38 +342,89 @@ export default function App() {
     setNapLogs((prev) => [newNap, ...prev])
   }
 
+  // MANUAL / FORGOTTEN SLEEP SESSION HANDLER (PROTECT STREAK)
+  const handleLogForgottenSleep = (newLog) => {
+    // Add to sleepLogs and keep sorted descending by startTime
+    setSleepLogs((prev) => {
+      const updated = [newLog, ...prev.filter((l) => l.id !== newLog.id)]
+      return updated.sort((a, b) => (b.startTime || 0) - (a.startTime || 0))
+    })
+
+    // Synchronize allWeeks schedule so Gantt chart and week views display the session
+    setAllWeeks((prevWeeks) =>
+      prevWeeks.map((week) => ({
+        ...week,
+        days: week.days.map((day) => {
+          const dateMatches = day.dateString === newLog.dateString
+          const dayAndWeekMatches =
+            day.day.toLowerCase() === newLog.day?.toLowerCase() &&
+            (week.id === newLog.weekId || (!newLog.weekId && week.id === 'week-current'))
+          if (dateMatches || dayAndWeekMatches) {
+            return {
+              ...day,
+              start: newLog.start,
+              end: newLog.end,
+              startHour: newLog.startHour,
+              endHour: newLog.endHour,
+              duration: newLog.duration,
+              disruptions: newLog.disruptions || [],
+              isRealSession: true,
+              dateString: newLog.dateString,
+            }
+          }
+          return day
+        }),
+      }))
+    )
+
+    // Trigger session confirmed banner
+    setLastFinishedSummary(newLog)
+  }
+
   // Restore all 3 weeks of demo seed data
   const handleRestoreDemoData = () => {
-    localStorage.removeItem('slumber_sleep_logs_v2')
-    localStorage.removeItem('slumber_all_weeks_v2')
-    localStorage.removeItem('slumber_nap_logs_v1')
-    setSleepLogs(INITIAL_SLEEP_LOGS)
-    setNapLogs(INITIAL_NAP_LOGS)
-    setAllWeeks(SEED_WEEKS)
+    setSleepLogs(DEMO_SLEEP_LOGS)
+    setNapLogs(DEMO_NAP_LOGS)
+    setAllWeeks(DEMO_SEED_WEEKS)
     setSelectedWeekIndex(0)
-    setSelectedDay(SEED_WEEKS[0].days[3])
+    setSelectedDay(DEMO_SEED_WEEKS[0].days[3])
     setActiveSession(null)
     setLastFinishedSummary(null)
+    try {
+      localStorage.setItem('slumber_sleep_logs_v2', JSON.stringify(DEMO_SLEEP_LOGS))
+      localStorage.setItem('slumber_nap_logs_v1', JSON.stringify(DEMO_NAP_LOGS))
+      localStorage.setItem('slumber_all_weeks_v2', JSON.stringify(DEMO_SEED_WEEKS))
+      localStorage.removeItem('slumber_active_session')
+    } catch {
+      // ignore
+    }
   }
 
   // Wipe all mock data to preview clean production state
   const handleClearForRelease = () => {
-    const emptyWeek = [
-      { id: 'mon', day: 'Mon', fullDay: 'Monday', start: '00:00', end: '00:00', startHour: 22, endHour: 22, duration: 0, disruptions: [] },
-      { id: 'tue', day: 'Tue', fullDay: 'Tuesday', start: '00:00', end: '00:00', startHour: 22, endHour: 22, duration: 0, disruptions: [] },
-      { id: 'wed', day: 'Wed', fullDay: 'Wednesday', start: '00:00', end: '00:00', startHour: 22, endHour: 22, duration: 0, disruptions: [] },
-      { id: 'thu', day: 'Thu', fullDay: 'Thursday', start: '00:00', end: '00:00', startHour: 22, endHour: 22, duration: 0, disruptions: [] },
-      { id: 'fri', day: 'Fri', fullDay: 'Friday', start: '00:00', end: '00:00', startHour: 22, endHour: 22, duration: 0, disruptions: [] },
-      { id: 'sat', day: 'Sat', fullDay: 'Saturday', start: '00:00', end: '00:00', startHour: 22, endHour: 22, duration: 0, disruptions: [] },
-      { id: 'sun', day: 'Sun', fullDay: 'Sunday', start: '00:00', end: '00:00', startHour: 22, endHour: 22, duration: 0, disruptions: [] },
+    const emptyWeeks = [
+      {
+        id: 'week-current',
+        label: 'This Week',
+        dateRange: 'Current Week',
+        days: CLEAN_WEEK_DATA,
+      },
     ]
     setSleepLogs([])
     setNapLogs([])
-    setAllWeeks([{ id: 'week-current', label: 'This Week', dateRange: 'Current Week', days: emptyWeek }])
+    setAllWeeks(emptyWeeks)
     setSelectedWeekIndex(0)
-    setSelectedDay(emptyWeek[0])
+    setSelectedDay(CLEAN_WEEK_DATA[0])
     setActiveSession(null)
     setLastFinishedSummary(null)
+    try {
+      localStorage.setItem('slumber_sleep_logs_v2', JSON.stringify([]))
+      localStorage.setItem('slumber_nap_logs_v1', JSON.stringify([]))
+      localStorage.setItem('slumber_all_weeks_v2', JSON.stringify(emptyWeeks))
+      localStorage.removeItem('slumber_active_session')
+    } catch {
+      // ignore
+    }
   }
 
   // Calculate Gantt week totals
@@ -400,6 +473,7 @@ export default function App() {
               onViewLog={() => setActiveTab('history')}
               streakStats={streakStats}
               onOpenStreakModal={() => setIsStreakModalOpen(true)}
+              sleepGoalHours={sleepGoalHours}
             />
           )}
 
@@ -413,6 +487,8 @@ export default function App() {
               napLogs={napLogs}
               onDeleteNap={handleDeleteNap}
               onAddNap={handleAddNap}
+              sleepGoalHours={sleepGoalHours}
+              onLogForgottenSleep={handleLogForgottenSleep}
             />
           )}
 
@@ -428,6 +504,7 @@ export default function App() {
               totalWeeklyDisruptions={totalWeeklyDisruptions}
               selectedDay={selectedDay}
               onSelectDay={setSelectedDay}
+              sleepGoalHours={sleepGoalHours}
             />
           )}
 
@@ -435,6 +512,8 @@ export default function App() {
             <SettingsPage
               currentTheme={currentTheme}
               onSelectTheme={setCurrentTheme}
+              sleepGoalHours={sleepGoalHours}
+              onUpdateSleepGoal={setSleepGoalHours}
               sleepLogsCount={sleepLogs.length}
               napLogsCount={napLogs.length}
               onRestoreDemoData={handleRestoreDemoData}

@@ -3,9 +3,9 @@
 // Easy to remove before production release: set USE_MOCK_SEED_DATA = false
 // ============================================================================
 
-export const USE_MOCK_SEED_DATA = true
+export const USE_MOCK_SEED_DATA = false
 
-export const SEED_WEEKS = [
+export const DEMO_SEED_WEEKS = [
   {
     id: 'week-current',
     label: 'This Week',
@@ -484,30 +484,42 @@ export const SEED_WEEKS = [
   },
 ]
 
-export const INITIAL_SLEEP_LOGS = USE_MOCK_SEED_DATA
-  ? SEED_WEEKS.flatMap((week) =>
-      [...week.days].reverse().map((day) => ({
-        ...day,
-        weekId: week.id,
-        weekLabel: week.label,
-      }))
-    )
-  : []
+export const CLEAN_WEEK_DATA = [
+  { id: 'mon', day: 'Mon', fullDay: 'Monday', start: '00:00', end: '00:00', startHour: 22, endHour: 22, duration: 0, disruptions: [] },
+  { id: 'tue', day: 'Tue', fullDay: 'Tuesday', start: '00:00', end: '00:00', startHour: 22, endHour: 22, duration: 0, disruptions: [] },
+  { id: 'wed', day: 'Wed', fullDay: 'Wednesday', start: '00:00', end: '00:00', startHour: 22, endHour: 22, duration: 0, disruptions: [] },
+  { id: 'thu', day: 'Thu', fullDay: 'Thursday', start: '00:00', end: '00:00', startHour: 22, endHour: 22, duration: 0, disruptions: [] },
+  { id: 'fri', day: 'Fri', fullDay: 'Friday', start: '00:00', end: '00:00', startHour: 22, endHour: 22, duration: 0, disruptions: [] },
+  { id: 'sat', day: 'Sat', fullDay: 'Saturday', start: '00:00', end: '00:00', startHour: 22, endHour: 22, duration: 0, disruptions: [] },
+  { id: 'sun', day: 'Sun', fullDay: 'Sunday', start: '00:00', end: '00:00', startHour: 22, endHour: 22, duration: 0, disruptions: [] },
+]
 
-export const INITIAL_WEEK_DATA = USE_MOCK_SEED_DATA
-  ? SEED_WEEKS[0].days
+export const SEED_WEEKS = USE_MOCK_SEED_DATA
+  ? DEMO_SEED_WEEKS
   : [
-      { id: 'mon', day: 'Mon', fullDay: 'Monday', start: '22:30', end: '06:30', startHour: 22.5, endHour: 30.5, duration: 8, disruptions: [] },
-      { id: 'tue', day: 'Tue', fullDay: 'Tuesday', start: '22:30', end: '06:30', startHour: 22.5, endHour: 30.5, duration: 8, disruptions: [] },
-      { id: 'wed', day: 'Wed', fullDay: 'Wednesday', start: '22:30', end: '06:30', startHour: 22.5, endHour: 30.5, duration: 8, disruptions: [] },
-      { id: 'thu', day: 'Thu', fullDay: 'Thursday', start: '22:30', end: '06:30', startHour: 22.5, endHour: 30.5, duration: 8, disruptions: [] },
-      { id: 'fri', day: 'Fri', fullDay: 'Friday', start: '22:30', end: '06:30', startHour: 22.5, endHour: 30.5, duration: 8, disruptions: [] },
-      { id: 'sat', day: 'Sat', fullDay: 'Saturday', start: '22:30', end: '06:30', startHour: 22.5, endHour: 30.5, duration: 8, disruptions: [] },
-      { id: 'sun', day: 'Sun', fullDay: 'Sunday', start: '22:30', end: '06:30', startHour: 22.5, endHour: 30.5, duration: 8, disruptions: [] },
+      {
+        id: 'week-current',
+        label: 'This Week',
+        dateRange: 'Current Week',
+        days: CLEAN_WEEK_DATA,
+      },
     ]
 
-export const INITIAL_NAP_LOGS = USE_MOCK_SEED_DATA
-  ? [
+export const DEMO_SLEEP_LOGS = DEMO_SEED_WEEKS.flatMap((week) =>
+  [...week.days].reverse().map((day) => ({
+    ...day,
+    weekId: week.id,
+    weekLabel: week.label,
+  }))
+)
+
+export const INITIAL_SLEEP_LOGS = USE_MOCK_SEED_DATA ? DEMO_SLEEP_LOGS : []
+
+export const INITIAL_WEEK_DATA = USE_MOCK_SEED_DATA
+  ? DEMO_SEED_WEEKS[0].days
+  : CLEAN_WEEK_DATA
+
+export const DEMO_NAP_LOGS = [
       {
         id: 'nap-1',
         day: 'Sun',
@@ -620,5 +632,6 @@ export const INITIAL_NAP_LOGS = USE_MOCK_SEED_DATA
         weekId: 'week-two-ago',
         weekLabel: '2 Weeks Ago',
       },
-    ]
-  : []
+]
+
+export const INITIAL_NAP_LOGS = USE_MOCK_SEED_DATA ? DEMO_NAP_LOGS : []

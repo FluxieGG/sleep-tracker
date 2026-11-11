@@ -11,6 +11,7 @@ export default function GanttChart({
   weekWithTotals,
   selectedDay,
   onSelectDay,
+  sleepGoalHours = 8,
 }) {
   return (
     <div className="rounded-2xl bg-slate-900/90 border border-slate-800/80 p-4 shadow-lg">
@@ -64,7 +65,9 @@ export default function GanttChart({
               ? Math.max(3, ((endOffset - startOffset) / CHART_TOTAL_HOURS) * 100)
               : 0
           const isSelected = selectedDay?.day === item.day
-          const meetsGoal = item.duration >= 8
+          const durationNum = Number(item.duration) || 0
+          const goalNum = Number(sleepGoalHours) || 8
+          const meetsGoal = durationNum >= goalNum
           const dayDisruptions = item.disruptions || []
 
           return (
@@ -150,11 +153,15 @@ export default function GanttChart({
               </div>
 
               <span
-                className={`text-xs font-semibold text-right tabular-nums ${
-                  meetsGoal ? 'text-emerald-400' : 'text-slate-300'
+                className={`text-xs tabular-nums text-right ${
+                  durationNum <= 0
+                    ? 'text-slate-500'
+                    : meetsGoal
+                    ? 'text-emerald-400 font-bold'
+                    : 'text-amber-400 font-medium'
                 }`}
               >
-                {item.duration > 0 ? formatDuration(item.duration) : '—'}
+                {durationNum > 0 ? formatDuration(durationNum) : '—'}
               </span>
             </button>
           )
@@ -181,10 +188,21 @@ export default function GanttChart({
           </div>
 
           {selectedDay.disruptions && selectedDay.disruptions.length > 0 ? (
-            <div className="rounded-xl bg-rose-950/25 border border-rose-500/30 p-2.5 space-y-1.5">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-rose-300">
-                Disruptions on {selectedDay.fullDay}:
-              </p>
+            <div className="rounded-xl bg-rose-950/25 border border-rose-500/30 p-2.5 space-y-2">
+              <div className="flex items-center justify-between flex-wrap gap-1">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-rose-300">
+                  Disruptions on {selectedDay.fullDay}:
+                </p>
+                <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                  <span>In Bed: <strong className="text-white font-medium">{formatDuration(selectedDay.duration ?? selectedDay.endHour - selectedDay.startHour)}</strong></span>
+                  <span className="text-slate-600">•</span>
+                  <span className="text-rose-400 font-medium">
+                    {selectedDay.disruptions.reduce((sum, d) => sum + (Number(d.durationMinutes) || 0), 0)}m awake
+                  </span>
+                  <span className="text-slate-600">•</span>
+                  <span>Actual: <strong className="text-emerald-400 font-semibold">{formatDuration(Math.max(0, (selectedDay.duration ?? selectedDay.endHour - selectedDay.startHour) - selectedDay.disruptions.reduce((sum, d) => sum + (Number(d.durationMinutes) || 0), 0) / 60))}</strong></span>
+                </div>
+              </div>
               {selectedDay.disruptions.map((d) => (
                 <div
                   key={d.id}

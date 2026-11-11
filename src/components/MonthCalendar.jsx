@@ -34,6 +34,7 @@ export default function MonthCalendar({
   onViewLog,
   streakStats = {},
   onOpenStreakModal,
+  sleepGoalHours = 8,
 }) {
   const today = useMemo(() => new Date(), [])
   const todayKey = useMemo(() => formatDateKey(today), [today])
@@ -132,7 +133,7 @@ export default function MonthCalendar({
   }
 
   return (
-    <div className="rounded-2xl bg-slate-900/90 border border-slate-800/80 p-4 shadow-xl space-y-4">
+    <div className="rounded-2xl bg-slate-900/90 border to-slate-900 border-[var(--accent-border)] p-4 to-slate-900 border-[var(--accent-border)] shadow-xl space-y-4">
       {/* Calendar Header with Month Navigation */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
@@ -350,16 +351,38 @@ export default function MonthCalendar({
                   {selectedSession.start12} → {selectedSession.end12}
                 </span>
               </span>
-              <span
-                className={`text-[11px] font-medium ${
-                  selectedSession.duration >= 8
-                    ? 'text-emerald-400'
-                    : 'text-amber-400'
-                }`}
-              >
-                {selectedSession.duration >= 8 ? '8h Goal Met' : 'Under 8h Goal'}
-              </span>
+              {(() => {
+                const goalNum = Number(sleepGoalHours) || 8
+                const durationNum = Number(selectedSession.duration) || 0
+                const meetsGoal = durationNum >= goalNum
+                return (
+                  <span
+                    className={`text-[11px] font-semibold px-2 py-0.5 rounded-md border ${
+                      meetsGoal
+                        ? 'text-emerald-300 bg-emerald-500/15 border-emerald-500/30'
+                        : 'text-amber-300 bg-amber-500/15 border-amber-500/30'
+                    }`}
+                  >
+                    {meetsGoal
+                      ? `${goalNum}h Goal Met`
+                      : `Under ${goalNum}h Goal`}
+                  </span>
+                )
+              })()}
             </div>
+
+            {/* Time in Bed vs Actual Sleep Breakdown if disruptions occurred */}
+            {selectedSession.disruptions?.length > 0 && (
+              <div className="flex items-center justify-between text-[11px] px-2.5 py-1.5 rounded-lg bg-slate-900/90 border border-slate-800 text-slate-400">
+                <span>In Bed: <strong className="text-white font-medium">{formatDuration(selectedSession.duration)}</strong></span>
+                <span className="text-slate-600">•</span>
+                <span className="text-rose-400 font-medium">
+                  {selectedSession.disruptions.reduce((sum, d) => sum + (Number(d.durationMinutes) || 0), 0)}m awake
+                </span>
+                <span className="text-slate-600">•</span>
+                <span>Actual: <strong className="text-emerald-400 font-semibold">{formatDuration(Math.max(0, Number(selectedSession.duration) - selectedSession.disruptions.reduce((sum, d) => sum + (Number(d.durationMinutes) || 0), 0) / 60))}</strong></span>
+              </div>
+            )}
 
             {/* Disruptions or Uninterrupted Status */}
             {selectedSession.disruptions?.length > 0 ? (

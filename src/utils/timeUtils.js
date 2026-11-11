@@ -55,6 +55,25 @@ export function getContinuousHours(startDate, endDate) {
   return { startHour, endHour, durationHours }
 }
 
+export function calculateSleepDuration(startTime24, endTime24) {
+  if (!startTime24 || !endTime24) return { duration: 0, startHour: 22, endHour: 22 }
+  const [sH, sM] = startTime24.split(':').map(Number)
+  const [eH, eM] = endTime24.split(':').map(Number)
+
+  let startCont = sH + sM / 60
+  let endCont = eH + eM / 60
+
+  if (startCont < 12) startCont += 24
+  if (endCont < 12) endCont += 24
+
+  if (endCont <= startCont) {
+    endCont += 24
+  }
+
+  const duration = +(endCont - startCont).toFixed(2)
+  return { duration, startHour: startCont, endHour: endCont }
+}
+
 export function formatDateKey(date) {
   const y = date.getFullYear()
   const m = padZero(date.getMonth() + 1)
@@ -78,6 +97,7 @@ const MONTH_MAP = {
 
 export function getLogDateKey(log) {
   if (!log) return null
+  if (log.dateKey) return log.dateKey
   if (log.startTime) {
     const d = new Date(log.startTime)
     if (!isNaN(d.getTime())) return formatDateKey(d)
