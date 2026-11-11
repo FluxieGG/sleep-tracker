@@ -14,6 +14,7 @@ import {
   formatDuration,
 } from '../utils/timeUtils'
 import MonthCalendar from '../components/MonthCalendar'
+import SleepMetricWidgets from '../components/SleepMetricWidgets'
 
 export default function TonightPage({
   isSleeping,
@@ -27,6 +28,7 @@ export default function TonightPage({
   onViewLog,
   streakStats = {},
   onOpenStreakModal,
+  sleepGoalHours = 8,
 }) {
   const activeDisruptions = activeSession?.disruptions || []
 
@@ -58,7 +60,9 @@ export default function TonightPage({
             )}
           </span>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400">Goal: 8h 00m</span>
+            <span className="text-xs text-slate-400">
+              Goal: {formatDuration(sleepGoalHours)}
+            </span>
             {streakStats.currentStreak > 0 && (
               <button
                 type="button"
@@ -179,79 +183,17 @@ export default function TonightPage({
         onViewLog={onViewLog}
         streakStats={streakStats}
         onOpenStreakModal={onOpenStreakModal}
+        sleepGoalHours={sleepGoalHours}
       />
 
-      {/* Recent Nights List on Tonight */}
-      <div className="rounded-2xl bg-slate-900/90 border border-slate-800/80 p-5">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <h3 className="text-sm font-semibold text-slate-200">
-              Recent Sleep Sessions
-            </h3>
-            <p className="text-[11px] text-slate-400">
-              Showing latest 4 of {sleepLogs.length} recorded nights
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onViewLog}
-            className="text-xs text-[var(--accent-text)] hover:opacity-80 flex items-center gap-0.5 cursor-pointer"
-          >
-            See All ({sleepLogs.length}) <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        {sleepLogs.length === 0 ? (
-          <div className="border border-dashed border-slate-800 rounded-xl p-6 text-center text-xs text-slate-500">
-            No sleep sessions logged yet. Tap "Start Sleep Session" when ready!
-          </div>
-        ) : (
-          <div className="space-y-2.5">
-            {sleepLogs.slice(0, 4).map((item) => {
-              const hasDisruptions = item.disruptions && item.disruptions.length > 0
-              return (
-                <div
-                  key={item.id}
-                  className={`p-3 rounded-xl border text-xs transition ${
-                    hasDisruptions
-                      ? 'bg-slate-950/60 border-rose-500/40'
-                      : 'bg-slate-950/40 border-slate-800/80'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-white">{item.fullDay}</span>
-                        <span className="text-[11px] text-slate-400">{item.dateString}</span>
-                      </div>
-                      <p className="text-slate-400 mt-0.5">
-                        {item.start12} → {item.end12}
-                      </p>
-                    </div>
-                    <span className="font-semibold text-[var(--accent-text)] px-2.5 py-1 rounded-lg bg-[var(--accent-subtle)] border border-[var(--accent-border)] tabular-nums">
-                      {formatDuration(item.duration)}
-                    </span>
-                  </div>
-
-                  {hasDisruptions && (
-                    <div className="mt-2 pt-2 border-t border-rose-500/20 flex flex-wrap gap-1.5">
-                      {item.disruptions.map((d) => (
-                        <span
-                          key={d.id}
-                          className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-300 border border-rose-500/30"
-                        >
-                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                          {d.icon} {d.type} ({d.time12})
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </div>
+      {/* 2 Square Widgets Side by Side: Sleep Metrics & Habits Showcase */}
+      <SleepMetricWidgets
+        sleepLogs={sleepLogs}
+        streakStats={streakStats}
+        sleepGoalHours={sleepGoalHours}
+        onOpenStreakModal={onOpenStreakModal}
+        onViewLog={onViewLog}
+      />
     </div>
   )
 }

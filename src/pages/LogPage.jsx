@@ -9,10 +9,12 @@ import {
   Plus,
   Sparkles,
   Zap,
+  History,
 } from 'lucide-react'
 import { formatDuration } from '../utils/timeUtils'
 import DeleteConfirmModal from '../components/DeleteConfirmModal'
 import LogNapModal from '../components/LogNapModal'
+import LogForgottenSleepModal from '../components/LogForgottenSleepModal'
 
 export default function LogPage({
   sleepLogs = [],
@@ -23,10 +25,13 @@ export default function LogPage({
   napLogs = [],
   onDeleteNap,
   onAddNap,
+  sleepGoalHours = 8,
+  onLogForgottenSleep,
 }) {
   const [activeSubTab, setActiveSubTab] = useState('sleep') // 'sleep' | 'nap'
   const [sessionPendingDelete, setSessionPendingDelete] = useState(null)
   const [isLogNapModalOpen, setIsLogNapModalOpen] = useState(false)
+  const [isLogForgottenModalOpen, setIsLogForgottenModalOpen] = useState(false)
 
   // Current list based on active sub-tab
   const isSleepTab = activeSubTab === 'sleep'
@@ -54,6 +59,32 @@ export default function LogPage({
 
   return (
     <div className="space-y-4">
+      {/* Trimmed Down Action Banner: Log Forgotten Sleep */}
+      <div className="rounded-2xl bg-slate-900/90 border border-slate-800/80 p-3 flex items-center justify-between gap-3 shadow-md">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-xl bg-[var(--accent-subtle)] border border-[var(--accent-border)] flex items-center justify-center text-[var(--accent-text)] shrink-0">
+            <History className="w-4 h-4" />
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-xs font-semibold text-white truncate">
+              Log Forgotten Sleep
+            </h3>
+            <p className="text-[10px] text-slate-400 truncate">
+              Recover past night & protect your streak
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsLogForgottenModalOpen(true)}
+          className="py-1.5 px-3 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-btn-text)] font-semibold text-xs flex items-center gap-1.5 shadow-sm shadow-[var(--accent-shadow)] transition cursor-pointer shrink-0 active:scale-95"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>Log Past Sleep</span>
+        </button>
+      </div>
+
       {/* Sub-Tabs: Sleep Log History (left) vs Nap Log History (right) */}
       <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-slate-950/80 border border-slate-800/80">
         <button
@@ -278,59 +309,94 @@ export default function LogPage({
                       </p>
                     )}
                   </div>
-                ) : hasDisruptions ? (
-                  /* Sleep Disruptions Block */
-                  <div className="rounded-xl bg-rose-950/20 border border-rose-500/30 p-3 space-y-2">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-rose-300 flex items-center gap-1.5">
-                      <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
-                      Logged Sleep Disruptions
-                    </p>
-                    <div className="space-y-2">
-                      {disList.map((d) => (
-                        <div
-                          key={d.id}
-                          className="rounded-lg bg-slate-950/80 border border-rose-500/30 p-2.5 flex items-start justify-between gap-2 text-xs"
-                        >
-                          <div className="flex items-start gap-2">
-                            <span className="text-base leading-none mt-0.5">
-                              {d.icon || '🔴'}
-                            </span>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-semibold text-rose-200">
-                                  {d.type}
-                                </span>
-                                <span className="text-[10px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 font-medium">
-                                  {d.durationMinutes || 5}m awake
-                                </span>
-                              </div>
-                              {d.note && (
-                                <p className="text-[11px] text-slate-400 mt-0.5">
-                                  {d.note}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                          <span className="text-[11px] font-mono font-semibold text-rose-400 shrink-0">
-                            {d.time12}
+                ) : (
+                  /* Sleep Logs Details Block */
+                  <div className="space-y-2.5">
+                    {hasDisruptions ? (
+                      /* Sleep Disruptions List */
+                      <div className="rounded-xl bg-rose-950/20 border border-rose-500/30 p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-rose-300 flex items-center gap-1.5">
+                            <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
+                            Logged Sleep Disruptions
+                          </p>
+                          <span className="text-[10px] text-rose-400 font-mono">
+                            {disList.reduce((acc, d) => acc + (Number(d.durationMinutes) || 0), 0)}m awake total
                           </span>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  /* Sleep Uninterrupted Rest Bar */
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-800/60 text-[11px] text-slate-400">
-                    <span className="text-emerald-400/90 flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Uninterrupted rest
-                    </span>
-                    <span
-                      className={
-                        log.duration >= 8 ? 'text-emerald-400' : 'text-amber-400'
-                      }
-                    >
-                      {log.duration >= 8 ? 'Goal Met' : 'Under 8h Goal'}
-                    </span>
+                        <div className="space-y-2">
+                          {disList.map((d) => (
+                            <div
+                              key={d.id}
+                              className="rounded-lg bg-slate-950/80 border border-rose-500/30 p-2.5 flex items-start justify-between gap-2 text-xs"
+                            >
+                              <div className="flex items-start gap-2">
+                                <span className="text-base leading-none mt-0.5">
+                                  {d.icon || '🔴'}
+                                </span>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-semibold text-rose-200">
+                                      {d.type}
+                                    </span>
+                                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 font-medium">
+                                      {d.durationMinutes || 5}m awake
+                                    </span>
+                                  </div>
+                                  {d.note && (
+                                    <p className="text-[11px] text-slate-400 mt-0.5">
+                                      {d.note}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <span className="text-[11px] font-mono font-semibold text-rose-400 shrink-0">
+                                {d.time12}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {/* Bottom Status & Goal Evaluation Bar (Always visible for all nights) */}
+                    {(() => {
+                      const goalNum = Number(sleepGoalHours) || 8
+                      const durationNum = Number(log.duration) || 0
+                      const meetsGoal = durationNum >= goalNum
+                      const totalAwakeMins = disList.reduce((acc, d) => acc + (Number(d.durationMinutes) || 0), 0)
+                      const actualSleepHours = Math.max(0, durationNum - totalAwakeMins / 60)
+
+                      return (
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-800/60 text-[11px] text-slate-400">
+                          {hasDisruptions ? (
+                            <span className="text-slate-400 flex items-center gap-1">
+                              <span>In Bed: <strong className="text-white font-medium">{formatDuration(durationNum)}</strong></span>
+                              <span className="text-slate-600">•</span>
+                              <span className="text-emerald-400 font-medium">
+                                Actual: {formatDuration(actualSleepHours)}
+                              </span>
+                            </span>
+                          ) : (
+                            <span className="text-emerald-400/90 flex items-center gap-1">
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Uninterrupted rest
+                            </span>
+                          )}
+
+                          <span
+                            className={`font-semibold px-2 py-0.5 rounded-md border ${
+                              meetsGoal
+                                ? 'text-emerald-300 bg-emerald-500/15 border-emerald-500/30'
+                                : 'text-amber-300 bg-amber-500/15 border-amber-500/30'
+                            }`}
+                          >
+                            {meetsGoal
+                              ? `${goalNum}h Goal Met`
+                              : `Under ${goalNum}h Goal`}
+                          </span>
+                        </div>
+                      )
+                    })()}
                   </div>
                 )}
               </div>
@@ -352,6 +418,14 @@ export default function LogPage({
         isOpen={isLogNapModalOpen}
         onClose={() => setIsLogNapModalOpen(false)}
         onSaveNap={handleSaveNap}
+      />
+
+      {/* Modal for recording a forgotten past sleep */}
+      <LogForgottenSleepModal
+        isOpen={isLogForgottenModalOpen}
+        onClose={() => setIsLogForgottenModalOpen(false)}
+        onSave={onLogForgottenSleep}
+        sleepGoalHours={sleepGoalHours}
       />
     </div>
   )

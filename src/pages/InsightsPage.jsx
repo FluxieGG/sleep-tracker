@@ -13,6 +13,7 @@ export default function InsightsPage({
   totalWeeklyDisruptions,
   selectedDay,
   onSelectDay,
+  sleepGoalHours = 8,
 }) {
   return (
     <div className="space-y-5">
@@ -70,8 +71,16 @@ export default function InsightsPage({
           <p className="text-xl font-bold text-white tabular-nums">
             {formatDuration(avgDailyHours)}
           </p>
-          <p className="text-[11px] text-emerald-400/90 mt-0.5">
-            {avgDailyHours >= 8 ? 'Met 8h target average' : 'Below 8h target'}
+          <p
+            className={`text-[11px] mt-0.5 font-medium ${
+              Number(avgDailyHours) >= Number(sleepGoalHours)
+                ? 'text-emerald-400'
+                : 'text-amber-400'
+            }`}
+          >
+            {Number(avgDailyHours) >= Number(sleepGoalHours)
+              ? `Met ${sleepGoalHours}h target average`
+              : `Below ${sleepGoalHours}h target`}
           </p>
         </div>
       </div>
@@ -82,6 +91,7 @@ export default function InsightsPage({
         weekWithTotals={weekWithTotals}
         selectedDay={selectedDay}
         onSelectDay={onSelectDay}
+        sleepGoalHours={sleepGoalHours}
       />
     </div>
   )
