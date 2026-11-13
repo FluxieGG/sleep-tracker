@@ -1,5 +1,22 @@
 @import "tailwindcss";
 
+@layer base {
+  input[type="date"],
+  input[type="time"] {
+    color-scheme: dark;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  input[type="date"]::-webkit-date-and-time-value,
+  input[type="time"]::-webkit-date-and-time-value {
+    text-align: left;
+  }
+}
+
 :root,
 [data-theme="indigo"] {
   --accent: #6366f1;
