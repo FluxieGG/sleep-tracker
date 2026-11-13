@@ -113,7 +113,8 @@ export default function Header({
         </div>
       </button>
 
-      {badge && (
+      {/* Highlighted Theme Streak Box on Tonight Header */}
+      {activeTab === 'tonight' || activeTab === 'history'  || activeTab === 'stats'  || activeTab === 'settings' ? (
         <button
           type="button"
           onClick={badge.onClick}
@@ -133,7 +134,7 @@ export default function Header({
             </span>
           </div>
         </button>
-      )}
+      ) : null}
     </header>
   )
 }
