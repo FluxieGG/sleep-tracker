@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Sun, X, Zap } from 'lucide-react'
-import { formatTime24, formatTime24To12, formatDateKey } from '../utils/timeUtils'
+import {
+  formatTime24,
+  formatTime24To12,
+  formatDateKey,
+  getWeekMondayKey,
+  getWeekMetadata,
+} from '../utils/timeUtils'
 
 const NAP_TYPES = [
   { id: 'power', label: 'Power Nap', icon: '⚡' },
@@ -58,6 +64,9 @@ export default function LogNapModal({ isOpen, onClose, onSaveNap }) {
       year: 'numeric',
     })
 
+    const weekMondayKey = getWeekMondayKey(now)
+    const weekMeta = getWeekMetadata(weekMondayKey)
+
     const newNap = {
       id: `nap-${Date.now()}`,
       day: dayShort,
@@ -72,8 +81,8 @@ export default function LogNapModal({ isOpen, onClose, onSaveNap }) {
       napType,
       quality,
       note: note.trim(),
-      weekId: 'week-current',
-      weekLabel: 'This Week',
+      weekId: weekMondayKey,
+      weekLabel: weekMeta.label,
     }
 
     onSaveNap(newNap)

@@ -179,11 +179,15 @@ export default function GanttChart({
                 {selectedDay.dateString ? ` (${selectedDay.dateString})` : ''}
               </span>
               <span className="text-slate-400 ml-2">
-                {selectedDay.start} – {selectedDay.end}
+                {selectedDay.duration > 0
+                  ? `${selectedDay.start} – ${selectedDay.end}`
+                  : 'No sleep logged'}
               </span>
             </div>
             <span className="font-semibold text-[var(--accent-text)] tabular-nums">
-              {formatDuration(selectedDay.duration ?? selectedDay.endHour - selectedDay.startHour)}
+              {selectedDay.duration > 0
+                ? formatDuration(selectedDay.duration ?? selectedDay.endHour - selectedDay.startHour)
+                : '—'}
             </span>
           </div>
 

@@ -233,3 +233,147 @@ export function calculateStreakStats(sleepLogs = []) {
     streakDates,
   }
 }
+
+export function getMondayOfWeek(input = new Date()) {
+  const d = typeof input === 'string' ? parseDateKey(input) : new Date(input)
+  const dayOfWeek = d.getDay()
+  const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + diffToMonday)
+}
+
+export function getWeekMondayKey(input = new Date()) {
+  return formatDateKey(getMondayOfWeek(input))
+}
+
+export function getLogWeekKey(log) {
+  const dateKey = getLogDateKey(log)
+  return dateKey ? getWeekMondayKey(dateKey) : null
+}
+
+export function shiftWeekMondayKey(mondayKey, deltaWeeks) {
+  const d = parseDateKey(mondayKey)
+  d.setDate(d.getDate() + deltaWeeks * 7)
+  return formatDateKey(d)
+}
+
+export function getWeekMetadata(mondayKey, referenceDate = new Date()) {
+  const currentMondayKey = getWeekMondayKey(referenceDate)
+  const weeksAgo = Math.round(diffInCalendarDays(currentMondayKey, mondayKey) / 7)
+
+  let label = 'This Week'
+  if (weeksAgo === 1) label = 'Last Week'
+  else if (weeksAgo > 1) label = `${weeksAgo} Weeks Ago`
+  else if (weeksAgo < 0) label = 'Upcoming Week'
+
+  const monday = parseDateKey(mondayKey)
+  const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6)
+  const fmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+
+  return {
+    id: mondayKey,
+    mondayKey,
+    label,
+    dateRange: `${fmt(monday)} – ${fmt(sunday)}`,
+    weeksAgo,
+  }
+}
+
+export function buildWeekSchedule(mondayKey, sleepLogs = [], referenceDate = new Date()) {
+  const meta = getWeekMetadata(mondayKey, referenceDate)
+  const monday = parseDateKey(mondayKey)
+
+  const logsByDate = new Map()
+  for (const log of sleepLogs) {
+    const key = getLogDateKey(log)
+    if (!key) continue
+    const list = logsByDate.get(key) || []
+    list.push(log)
+    logsByDate.set(key, list)
+  }
+
+  const days = []
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i)
+    const dateKey = formatDateKey(d)
+    const day = d.toLocaleDateString('en-US', { weekday: 'short' })
+    const fullDay = d.toLocaleDateString('en-US', { weekday: 'long' })
+    const dateString = d.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
+
+    const dayLogs = logsByDate.get(dateKey) || []
+    if (dayLogs.length > 0) {
+      const primary = dayLogs[0]
+      const totalDuration =
+        dayLogs.length === 1
+          ? Number(primary.duration) || 0
+          : +dayLogs.reduce((acc, item) => acc + (Number(item.duration) || 0), 0).toFixed(2)
+      const mergedDisruptions = dayLogs.flatMap((item) => item.disruptions || [])
+
+      days.push({
+        id: primary.id || `${mondayKey}-${day.toLowerCase()}`,
+        dateKey,
+        day,
+        fullDay,
+        dateString,
+        start: primary.start || '00:00',
+        end: primary.end || '00:00',
+        start12: primary.start12,
+        end12: primary.end12,
+        startHour: primary.startHour ?? parseTimeToContinuous(primary.start || '22:00'),
+        endHour: primary.endHour ?? (primary.startHour ?? 22) + totalDuration,
+        duration: totalDuration,
+        disruptions: mergedDisruptions,
+        isRealSession: true,
+      })
+    } else {
+      days.push({
+        id: `${mondayKey}-${day.toLowerCase()}`,
+        dateKey,
+        day,
+        fullDay,
+        dateString,
+        start: '00:00',
+        end: '00:00',
+        startHour: 22,
+        endHour: 22,
+        duration: 0,
+        disruptions: [],
+        isRealSession: false,
+      })
+    }
+  }
+
+  return {
+    ...meta,
+    days,
+  }
+}
+
+export function buildAvailableWeeks(
+  sleepLogs = [],
+  napLogs = [],
+  minWeeksCount = 8,
+  referenceDate = new Date()
+) {
+  const currentMondayKey = getWeekMondayKey(referenceDate)
+  const keys = new Set()
+
+  for (let i = 0; i < minWeeksCount; i++) {
+    keys.add(shiftWeekMondayKey(currentMondayKey, -i))
+  }
+
+  for (const log of [...sleepLogs, ...napLogs]) {
+    const weekKey = getLogWeekKey(log)
+    if (weekKey && weekKey <= currentMondayKey) {
+      keys.add(weekKey)
+    }
+  }
+
+  return Array.from(keys)
+    .sort()
+    .reverse()
+    .map((key) => getWeekMetadata(key, referenceDate))
+}
