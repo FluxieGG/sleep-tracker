@@ -1,21 +1,23 @@
 import { useState, useEffect, useMemo } from 'react'
 import {
-  SEED_WEEKS,
   INITIAL_SLEEP_LOGS,
   INITIAL_NAP_LOGS,
-  INITIAL_WEEK_DATA,
-  DEMO_SEED_WEEKS,
   DEMO_SLEEP_LOGS,
   DEMO_NAP_LOGS,
-  CLEAN_WEEK_DATA,
 } from './data/mockSeedData'
 import {
   formatTime24,
   formatTime12,
   formatTime24To12,
+  formatDateKey,
   parseTimeToContinuous,
   getContinuousHours,
   calculateStreakStats,
+  getWeekMondayKey,
+  getWeekMetadata,
+  shiftWeekMondayKey,
+  buildWeekSchedule,
+  buildAvailableWeeks,
 } from './utils/timeUtils'
 
 // Layout & Shared Components
@@ -86,33 +88,26 @@ export default function App() {
     }
   })
 
-  // Multi-week schedule for the Gantt chart (3 weeks)
-  const [allWeeks, setAllWeeks] = useState(() => {
-    try {
-      const saved = localStorage.getItem('slumber_all_weeks_v2')
-      return saved ? JSON.parse(saved) : SEED_WEEKS
-    } catch {
-      return SEED_WEEKS
-    }
+  // Week offset for Insights schedule (0 = current Mon–Sun week, 1 = last week, etc.)
+  const [selectedWeekOffset, setSelectedWeekOffset] = useState(0)
+  const currentMondayKey = getWeekMondayKey(new Date())
+  const activeMondayKey = shiftWeekMondayKey(currentMondayKey, -selectedWeekOffset)
+
+  const currentWeekObj = useMemo(
+    () => buildWeekSchedule(activeMondayKey, sleepLogs),
+    [activeMondayKey, sleepLogs]
+  )
+  const weekSchedule = currentWeekObj.days
+
+  const allWeeks = useMemo(
+    () => buildAvailableWeeks(sleepLogs, napLogs, 8),
+    [sleepLogs, napLogs]
+  )
+
+  const [selectedDayShort, setSelectedDayShort] = useState(() => {
+    const todayShort = new Date().toLocaleDateString('en-US', { weekday: 'short' })
+    return todayShort || 'Mon'
   })
-
-  const [selectedWeekIndex, setSelectedWeekIndex] = useState(0)
-  const currentWeekObj = allWeeks[selectedWeekIndex] || allWeeks[0]
-  const weekSchedule = currentWeekObj?.days || INITIAL_WEEK_DATA
-
-  // Helper to update the currently active week (Week 0) when new sessions are logged
-  const setWeekSchedule = (updater) => {
-    setAllWeeks((prevWeeks) =>
-      prevWeeks.map((w, idx) => {
-        if (idx !== 0) return w
-        const updatedDays = typeof updater === 'function' ? updater(w.days) : updater
-        return { ...w, days: updatedDays }
-      })
-    )
-  }
-
-  // Selected day for the Gantt detail view
-  const [selectedDay, setSelectedDay] = useState(() => weekSchedule[3] || weekSchedule[0])
 
   // Sleep goal target in hours (default: 8.0 hours)
   const [sleepGoalHours, setSleepGoalHours] = useState(() => {
@@ -200,19 +195,15 @@ export default function App() {
     localStorage.setItem('slumber_nap_logs_v1', JSON.stringify(napLogs))
   }, [napLogs])
 
-  // Save multi-week schedule changes
-  useEffect(() => {
-    localStorage.setItem('slumber_all_weeks_v2', JSON.stringify(allWeeks))
-  }, [allWeeks])
-
-  // Keep selectedDay synced when switching weeks
-  const handleSelectWeek = (index) => {
-    setSelectedWeekIndex(index)
-    const targetWeek = allWeeks[index]
-    if (targetWeek?.days?.length) {
-      const withDisruption = targetWeek.days.find((d) => d.disruptions?.length > 0)
-      setSelectedDay(withDisruption || targetWeek.days[0])
-    }
+  // Switch weeks in Insights & select the most informative day in that week
+  const handleSelectWeekOffset = (nextOffset) => {
+    const clampedOffset = Math.max(0, nextOffset)
+    setSelectedWeekOffset(clampedOffset)
+    const targetMondayKey = shiftWeekMondayKey(currentMondayKey, -clampedOffset)
+    const targetWeek = buildWeekSchedule(targetMondayKey, sleepLogs)
+    const withDisruption = targetWeek.days.find((d) => d.disruptions?.length > 0)
+    const withSession = targetWeek.days.find((d) => d.duration > 0)
+    setSelectedDayShort((withDisruption || withSession || targetWeek.days[0]).day)
   }
 
   // START SLEEP SESSION: Take timestamp
@@ -269,6 +260,8 @@ export default function App() {
     const { startHour, endHour, durationHours } = getContinuousHours(startDate, endDate)
     const dayShort = startDate.toLocaleDateString('en-US', { weekday: 'short' })
     const dayFull = startDate.toLocaleDateString('en-US', { weekday: 'long' })
+    const weekMondayKey = getWeekMondayKey(startDate)
+    const weekMeta = getWeekMetadata(weekMondayKey)
 
     const newLog = {
       id: `session-${Date.now()}`,
@@ -279,6 +272,7 @@ export default function App() {
         day: 'numeric',
         year: 'numeric',
       }),
+      dateKey: formatDateKey(startDate),
       day: dayShort,
       fullDay: dayFull,
       start: formatTime24(startDate),
@@ -289,65 +283,20 @@ export default function App() {
       endHour,
       duration: durationHours,
       disruptions: activeSession.disruptions || [],
-      weekId: 'week-current',
-      weekLabel: 'This Week',
+      weekId: weekMondayKey,
+      weekLabel: weekMeta.label,
     }
 
     setSleepLogs((prev) => [newLog, ...prev])
-
-    setWeekSchedule((prev) =>
-      prev.map((item) =>
-        item.day.toLowerCase() === dayShort.toLowerCase()
-          ? {
-              ...item,
-              start: newLog.start,
-              end: newLog.end,
-              startHour: newLog.startHour,
-              endHour: newLog.endHour,
-              duration: newLog.duration,
-              disruptions: newLog.disruptions,
-              isRealSession: true,
-            }
-          : item
-      )
-    )
-
-    setSelectedWeekIndex(0)
+    setSelectedWeekOffset(0)
+    setSelectedDayShort(dayShort)
     setActiveSession(null)
     setLastFinishedSummary(newLog)
   }
 
   // DELETE A LOG (2-step confirmed)
   const handleDeleteLog = (logId) => {
-    const target = sleepLogs.find((l) => l.id === logId)
     setSleepLogs((prev) => prev.filter((l) => l.id !== logId))
-
-    if (target) {
-      setAllWeeks((prevWeeks) =>
-        prevWeeks.map((week) => ({
-          ...week,
-          days: week.days.map((day) => {
-            const matchesId = day.id === target.id
-            const matchesDayAndWeek =
-              day.day.toLowerCase() === target.day?.toLowerCase() &&
-              (target.weekId ? week.id === target.weekId : week.id === 'week-current')
-            if (matchesId || matchesDayAndWeek) {
-              return {
-                ...day,
-                start: '00:00',
-                end: '00:00',
-                startHour: 22,
-                endHour: 22,
-                duration: 0,
-                disruptions: [],
-                isRealSession: false,
-              }
-            }
-            return day
-          }),
-        }))
-      )
-    }
 
     if (lastFinishedSummary?.id === logId) {
       setLastFinishedSummary(null)
@@ -366,40 +315,11 @@ export default function App() {
 
   // MANUAL / FORGOTTEN SLEEP SESSION HANDLER (PROTECT STREAK)
   const handleLogForgottenSleep = (newLog) => {
-    // Add to sleepLogs and keep sorted descending by startTime
     setSleepLogs((prev) => {
       const updated = [newLog, ...prev.filter((l) => l.id !== newLog.id)]
       return updated.sort((a, b) => (b.startTime || 0) - (a.startTime || 0))
     })
 
-    // Synchronize allWeeks schedule so Gantt chart and week views display the session
-    setAllWeeks((prevWeeks) =>
-      prevWeeks.map((week) => ({
-        ...week,
-        days: week.days.map((day) => {
-          const dateMatches = day.dateString === newLog.dateString
-          const dayAndWeekMatches =
-            day.day.toLowerCase() === newLog.day?.toLowerCase() &&
-            (week.id === newLog.weekId || (!newLog.weekId && week.id === 'week-current'))
-          if (dateMatches || dayAndWeekMatches) {
-            return {
-              ...day,
-              start: newLog.start,
-              end: newLog.end,
-              startHour: newLog.startHour,
-              endHour: newLog.endHour,
-              duration: newLog.duration,
-              disruptions: newLog.disruptions || [],
-              isRealSession: true,
-              dateString: newLog.dateString,
-            }
-          }
-          return day
-        }),
-      }))
-    )
-
-    // Trigger session confirmed banner
     setLastFinishedSummary(newLog)
   }
 
@@ -407,15 +327,13 @@ export default function App() {
   const handleRestoreDemoData = () => {
     setSleepLogs(DEMO_SLEEP_LOGS)
     setNapLogs(DEMO_NAP_LOGS)
-    setAllWeeks(DEMO_SEED_WEEKS)
-    setSelectedWeekIndex(0)
-    setSelectedDay(DEMO_SEED_WEEKS[0].days[3])
+    setSelectedWeekOffset(0)
+    setSelectedDayShort('Mon')
     setActiveSession(null)
     setLastFinishedSummary(null)
     try {
       localStorage.setItem('slumber_sleep_logs_v2', JSON.stringify(DEMO_SLEEP_LOGS))
       localStorage.setItem('slumber_nap_logs_v1', JSON.stringify(DEMO_NAP_LOGS))
-      localStorage.setItem('slumber_all_weeks_v2', JSON.stringify(DEMO_SEED_WEEKS))
       localStorage.removeItem('slumber_active_session')
     } catch {
       // ignore
@@ -424,25 +342,15 @@ export default function App() {
 
   // Wipe all mock data to preview clean production state
   const handleClearForRelease = () => {
-    const emptyWeeks = [
-      {
-        id: 'week-current',
-        label: 'This Week',
-        dateRange: 'Current Week',
-        days: CLEAN_WEEK_DATA,
-      },
-    ]
     setSleepLogs([])
     setNapLogs([])
-    setAllWeeks(emptyWeeks)
-    setSelectedWeekIndex(0)
-    setSelectedDay(CLEAN_WEEK_DATA[0])
+    setSelectedWeekOffset(0)
+    setSelectedDayShort('Mon')
     setActiveSession(null)
     setLastFinishedSummary(null)
     try {
       localStorage.setItem('slumber_sleep_logs_v2', JSON.stringify([]))
       localStorage.setItem('slumber_nap_logs_v1', JSON.stringify([]))
-      localStorage.setItem('slumber_all_weeks_v2', JSON.stringify(emptyWeeks))
       localStorage.removeItem('slumber_active_session')
     } catch {
       // ignore
@@ -454,6 +362,8 @@ export default function App() {
     const duration = item.duration ?? Math.max(0, item.endHour - item.startHour)
     return { ...item, duration }
   })
+  const selectedDay =
+    weekWithTotals.find((d) => d.day === selectedDayShort) || weekWithTotals[0]
   const totalWeeklyHours = weekWithTotals.reduce((acc, cur) => acc + cur.duration, 0)
   const avgDailyHours = totalWeeklyHours / weekWithTotals.length
   const totalWeeklyDisruptions = weekWithTotals.reduce(
@@ -518,16 +428,15 @@ export default function App() {
 
           {activeTab === 'stats' && (
             <InsightsPage
-              allWeeks={allWeeks}
-              selectedWeekIndex={selectedWeekIndex}
-              onSelectWeek={handleSelectWeek}
+              selectedWeekOffset={selectedWeekOffset}
+              onSelectWeekOffset={handleSelectWeekOffset}
               currentWeekObj={currentWeekObj}
               weekWithTotals={weekWithTotals}
               totalWeeklyHours={totalWeeklyHours}
               avgDailyHours={avgDailyHours}
               totalWeeklyDisruptions={totalWeeklyDisruptions}
               selectedDay={selectedDay}
-              onSelectDay={setSelectedDay}
+              onSelectDay={(dayObj) => setSelectedDayShort(dayObj.day)}
               sleepGoalHours={sleepGoalHours}
             />
           )}

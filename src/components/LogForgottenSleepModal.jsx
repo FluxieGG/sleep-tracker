@@ -16,6 +16,8 @@ import {
   formatTime24To12,
   formatDuration,
   calculateSleepDuration,
+  getWeekMondayKey,
+  getWeekMetadata,
 } from '../utils/timeUtils'
 
 const COMMON_DISRUPTIONS = [
@@ -142,6 +144,9 @@ export default function LogForgottenSleepModal({
       year: 'numeric',
     })
 
+    const weekMondayKey = getWeekMondayKey(dateStr)
+    const weekMeta = getWeekMetadata(weekMondayKey)
+
     const newSession = {
       id: `session-manual-${Date.now()}`,
       startTime: startTimeMs,
@@ -161,8 +166,8 @@ export default function LogForgottenSleepModal({
       note: note.trim(),
       isRealSession: true,
       isManualForgotten: true,
-      weekId: 'week-current',
-      weekLabel: 'This Week',
+      weekId: weekMondayKey,
+      weekLabel: weekMeta.label,
     }
 
     if (onSave) onSave(newSession)

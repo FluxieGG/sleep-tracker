@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import {
   Moon,
   Sun,
@@ -8,8 +8,17 @@ import {
   X,
   Plus,
   Zap,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
 } from 'lucide-react'
-import { formatDuration } from '../utils/timeUtils'
+import {
+  formatDuration,
+  getWeekMondayKey,
+  shiftWeekMondayKey,
+  getWeekMetadata,
+  getLogWeekKey,
+} from '../utils/timeUtils'
 import DeleteConfirmModal from '../components/DeleteConfirmModal'
 import LogNapModal from '../components/LogNapModal'
 
@@ -24,18 +33,44 @@ export default function LogPage({
   onAddNap,
   sleepGoalHours = 8,
 }) {
-  const [activeSubTab, setActiveSubTab] = useState('sleep') // 'sleep' | 'nap'
+  const [activeSubTab, setActiveSubTab] = useState('sleep')
   const [sessionPendingDelete, setSessionPendingDelete] = useState(null)
   const [isLogNapModalOpen, setIsLogNapModalOpen] = useState(false)
 
-  // Current list based on active sub-tab
   const isSleepTab = activeSubTab === 'sleep'
   const rawList = isSleepTab ? sleepLogs : napLogs
+  const currentMondayKey = getWeekMondayKey(new Date())
+
+  const pickerWeeks = useMemo(() => {
+    if (
+      logWeekFilter === 'all' ||
+      allWeeks.some((w) => w.mondayKey === logWeekFilter)
+    ) {
+      return allWeeks
+    }
+    return [...allWeeks, getWeekMetadata(logWeekFilter)].sort((a, b) =>
+      b.mondayKey.localeCompare(a.mondayKey)
+    )
+  }, [allWeeks, logWeekFilter])
 
   const filteredList =
     logWeekFilter === 'all'
       ? rawList
-      : rawList.filter((item) => item.weekId === logWeekFilter)
+      : rawList.filter((item) => getLogWeekKey(item) === logWeekFilter)
+
+  const handlePrevWeek = () => {
+    if (logWeekFilter === 'all') {
+      onChangeFilter(currentMondayKey)
+    } else {
+      onChangeFilter(shiftWeekMondayKey(logWeekFilter, -1))
+    }
+  }
+
+  const handleNextWeek = () => {
+    if (logWeekFilter === 'all' || logWeekFilter >= currentMondayKey) return
+    const nextKey = shiftWeekMondayKey(logWeekFilter, 1)
+    onChangeFilter(nextKey > currentMondayKey ? currentMondayKey : nextKey)
+  }
 
   const handleConfirmDelete = (id) => {
     if (sessionPendingDelete?.napType) {
@@ -132,36 +167,70 @@ export default function LogPage({
         </div>
       </div>
 
-      {/* Week Filter Pills */}
-      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+      {/* Week Picker (Monday–Sunday Calendar Weeks) */}
+      <div className="rounded-2xl bg-slate-900/90 border border-slate-800/80 p-2 flex items-center gap-1.5">
         <button
           type="button"
           onClick={() => onChangeFilter('all')}
-          className={`px-3 py-1.5 rounded-xl text-xs font-medium shrink-0 transition cursor-pointer ${
+          className={`px-2.5 py-2 rounded-xl text-xs font-semibold shrink-0 transition cursor-pointer ${
             logWeekFilter === 'all'
               ? 'bg-[var(--accent)] text-[var(--accent-btn-text)] shadow-sm'
-              : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'
+              : 'bg-slate-950/70 border border-slate-800 text-slate-400 hover:text-slate-200'
           }`}
         >
-          All Weeks ({rawList.length})
+          All ({rawList.length})
         </button>
-        {allWeeks.map((w) => {
-          const count = rawList.filter((item) => item.weekId === w.id).length
-          return (
-            <button
-              key={w.id}
-              type="button"
-              onClick={() => onChangeFilter(w.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium shrink-0 transition cursor-pointer ${
-                logWeekFilter === w.id
-                  ? 'bg-[var(--accent)] text-[var(--accent-btn-text)] shadow-sm'
-                  : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'
-              }`}
+
+        <div className="flex-1 flex items-center gap-1 min-w-0 bg-slate-950/70 border border-slate-800 rounded-xl p-1">
+          <button
+            type="button"
+            onClick={handlePrevWeek}
+            className="p-1.5 rounded-lg text-slate-300 hover:bg-slate-800 active:scale-95 transition cursor-pointer shrink-0"
+            title="Previous Week"
+            aria-label="Previous Week"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          <div className="relative flex-1 min-w-0 flex items-center">
+            <Calendar className="w-3.5 h-3.5 text-[var(--accent-text)] shrink-0 ml-1 pointer-events-none" />
+            <select
+              value={logWeekFilter}
+              onChange={(e) => onChangeFilter(e.target.value)}
+              aria-label="Select Week"
+              className="w-full min-w-0 bg-transparent text-xs font-semibold text-white pl-1.5 pr-2 py-1 outline-none cursor-pointer truncate [color-scheme:dark]"
             >
-              {w.label} {count > 0 && `(${count})`}
-            </button>
-          )
-        })}
+              <option value="all" className="bg-slate-900 text-slate-200">
+                All Weeks ({rawList.length})
+              </option>
+              {pickerWeeks.map((w) => {
+                const count = rawList.filter(
+                  (item) => getLogWeekKey(item) === w.mondayKey
+                ).length
+                return (
+                  <option
+                    key={w.mondayKey}
+                    value={w.mondayKey}
+                    className="bg-slate-900 text-slate-200"
+                  >
+                    {w.label} ({w.dateRange}){count > 0 ? ` • ${count}` : ''}
+                  </option>
+                )
+              })}
+            </select>
+          </div>
+
+          <button
+            type="button"
+            disabled={logWeekFilter === 'all' || logWeekFilter >= currentMondayKey}
+            onClick={handleNextWeek}
+            className="p-1.5 rounded-lg text-slate-300 hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition cursor-pointer shrink-0"
+            title="Next Week"
+            aria-label="Next Week"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Log Cards List (Identical High-Quality Structure) */}
