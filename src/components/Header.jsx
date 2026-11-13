@@ -1,4 +1,5 @@
-import { Moon, Flame } from 'lucide-react'
+import { Moon, Flame, Plus, TrendingUp } from 'lucide-react'
+import { getUserAccount } from '../constants/userConstants'
 
 export default function Header({
   isSleeping,
@@ -6,8 +7,78 @@ export default function Header({
   activeTab = 'tonight',
   streakStats = {},
   onOpenStreakModal,
+  onOpenLogPastSleepModal,
+  onOpenSleepTrendModal,
+  onOpenUserAccountModal,
+  activeUser = 'Nyall',
 }) {
   const streakCount = streakStats.currentStreak || 0
+  const userAccount = getUserAccount(activeUser)
+
+  const badgeByTab = {
+    tonight: {
+      onClick: onOpenStreakModal,
+      title: `Sleep Streak: ${streakCount} consecutive days logged. Click to view streak log.`,
+      ariaLabel: `Sleep streak: ${streakCount} days logged`,
+      iconBoxClass:
+        'rounded-lg bg-[var(--accent)] text-[var(--accent-btn-text)]',
+      icon: <Flame className="w-3.5 h-3.5 fill-current" />,
+      topContent: (
+        <div className="flex items-center justify-end gap-1">
+          <span className="text-xs font-extrabold text-white tabular-nums">
+            {streakCount}
+          </span>
+          <span className="text-[11px] font-semibold text-slate-200">
+            {streakCount === 1 ? 'Day' : 'Days'}
+          </span>
+        </div>
+      ),
+      subtitle: 'Streak Log',
+    },
+    history: {
+      onClick: onOpenLogPastSleepModal,
+      title: 'Log Past Sleep Session (protect streak)',
+      ariaLabel: 'Log Past Sleep',
+      iconBoxClass:
+        'rounded-lg bg-[var(--accent)] text-[var(--accent-btn-text)]',
+      icon: <Plus className="w-3.5 h-3.5 stroke-[3]" />,
+      topContent: (
+        <span className="text-xs font-extrabold text-white tracking-tight">
+          Log Past
+        </span>
+      ),
+      subtitle: 'Sleep',
+    },
+    stats: {
+      onClick: onOpenSleepTrendModal,
+      title: 'View 7-Day Sleep Trend Line Graph & Moving Average',
+      ariaLabel: '7-Day Sleep Trend Graph',
+      iconBoxClass:
+        'rounded-lg bg-[var(--accent)] text-[var(--accent-btn-text)]',
+      icon: <TrendingUp className="w-3.5 h-3.5 stroke-[2.5]" />,
+      topContent: (
+        <span className="text-xs font-extrabold text-white tracking-tight">
+          7-Day
+        </span>
+      ),
+      subtitle: 'Trend Graph',
+    },
+    settings: {
+      onClick: onOpenUserAccountModal,
+      title: `Active Account: ${activeUser}. Click to switch user.`,
+      ariaLabel: `User Account: ${activeUser}`,
+      iconBoxClass: `rounded-full bg-gradient-to-br ${userAccount.badgeGradient} text-white ring-1 ${userAccount.ring}`,
+      icon: userAccount.initial,
+      topContent: (
+        <span className="text-xs font-extrabold text-white tracking-tight truncate max-w-[65px]">
+          {activeUser}
+        </span>
+      ),
+      subtitle: 'Account',
+    },
+  }
+
+  const badge = badgeByTab[activeTab]
 
   return (
     <header className="sticky top-0 z-20 backdrop-blur-md bg-slate-900/80 border-b border-slate-800/80 px-5 py-3.5 flex items-center justify-between gap-3">
@@ -42,29 +113,23 @@ export default function Header({
         </div>
       </button>
 
-      {/* Highlighted Theme Streak Box on Tonight Header */}
-      {activeTab === 'tonight' && (
+      {badge && (
         <button
           type="button"
-          onClick={onOpenStreakModal}
-          className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-[var(--accent-border)] bg-[var(--accent-subtle)] text-[var(--accent-text)] shadow-sm hover:border-[var(--accent)] active:scale-[0.98] transition cursor-pointer select-none group shrink-0"
-          title={`Sleep Streak: ${streakCount} consecutive days logged. Click to view streak log.`}
-          aria-label={`Sleep streak: ${streakCount} days logged`}
+          onClick={badge.onClick}
+          className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-[var(--accent-border)] bg-[var(--accent-subtle)] text-[var(--accent-text)] shadow-sm hover:border-[var(--accent)] hover:bg-[var(--accent-hover)]/10 active:scale-[0.98] transition cursor-pointer select-none group shrink-0"
+          title={badge.title}
+          aria-label={badge.ariaLabel}
         >
-          <div className="w-6 h-6 rounded-lg bg-[var(--accent)] text-[var(--accent-btn-text)] flex items-center justify-center font-bold text-xs shadow-sm shadow-[var(--accent-shadow)] shrink-0 group-hover:scale-105 transition-transform">
-            <Flame className="w-3.5 h-3.5 fill-current" />
+          <div
+            className={`w-6 h-6 flex items-center justify-center font-bold text-xs shadow-sm shadow-[var(--accent-shadow)] shrink-0 group-hover:scale-105 transition-transform ${badge.iconBoxClass}`}
+          >
+            {badge.icon}
           </div>
           <div className="flex flex-col text-right leading-none">
-            <div className="flex items-center justify-end gap-1">
-              <span className="text-xs font-extrabold text-white tabular-nums">
-                {streakCount}
-              </span>
-              <span className="text-[11px] font-semibold text-slate-200">
-                {streakCount === 1 ? 'Day' : 'Days'}
-              </span>
-            </div>
+            {badge.topContent}
             <span className="text-[9px] font-semibold text-[var(--accent-text)] uppercase tracking-wider mt-0.5">
-              Streak Log
+              {badge.subtitle}
             </span>
           </div>
         </button>

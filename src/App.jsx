@@ -24,6 +24,9 @@ import BottomNav from './components/BottomNav'
 import SessionConfirmedBanner from './components/SessionConfirmedBanner'
 import DisruptionModal from './components/DisruptionModal'
 import StreakModal from './components/StreakModal'
+import LogForgottenSleepModal from './components/LogForgottenSleepModal'
+import SleepTrendModal from './components/SleepTrendModal'
+import UserAccountModal from './components/UserAccountModal'
 
 // Separated Page Views
 import TonightPage from './pages/TonightPage'
@@ -138,9 +141,28 @@ export default function App() {
   // Live timer tick for active session
   const [elapsedMs, setElapsedMs] = useState(0)
 
-  // Disruption Modal visibility
+  const [activeUser, setActiveUser] = useState(() => {
+    try {
+      return localStorage.getItem('slumber_active_user') || 'Nyall'
+    } catch {
+      return 'Nyall'
+    }
+  })
+
+  const handleSelectUser = (name) => {
+    setActiveUser(name)
+    try {
+      localStorage.setItem('slumber_active_user', name)
+    } catch {
+      // ignore
+    }
+  }
+
   const [isDisruptionModalOpen, setIsDisruptionModalOpen] = useState(false)
   const [isStreakModalOpen, setIsStreakModalOpen] = useState(false)
+  const [isLogPastSleepModalOpen, setIsLogPastSleepModalOpen] = useState(false)
+  const [isSleepTrendModalOpen, setIsSleepTrendModalOpen] = useState(false)
+  const [isUserAccountModalOpen, setIsUserAccountModalOpen] = useState(false)
 
   // Sleep streak stats synchronized with sleepLogs
   const streakStats = useMemo(() => calculateStreakStats(sleepLogs), [sleepLogs])
@@ -445,13 +467,16 @@ export default function App() {
     <div className="min-h-dvh bg-slate-950 flex justify-center text-slate-100">
       {/* Mobile Shell Container */}
       <div className="w-full max-w-md min-h-dvh bg-slate-900/60 border-x border-slate-800/60 flex flex-col justify-between relative shadow-2xl">
-        {/* Top Header */}
         <Header
           isSleeping={isSleeping}
           onNavigateTonight={() => setActiveTab('tonight')}
           activeTab={activeTab}
           streakStats={streakStats}
           onOpenStreakModal={() => setIsStreakModalOpen(true)}
+          onOpenLogPastSleepModal={() => setIsLogPastSleepModalOpen(true)}
+          onOpenSleepTrendModal={() => setIsSleepTrendModalOpen(true)}
+          onOpenUserAccountModal={() => setIsUserAccountModalOpen(true)}
+          activeUser={activeUser}
         />
 
         {/* Main Scrollable Content Area */}
@@ -488,7 +513,6 @@ export default function App() {
               onDeleteNap={handleDeleteNap}
               onAddNap={handleAddNap}
               sleepGoalHours={sleepGoalHours}
-              onLogForgottenSleep={handleLogForgottenSleep}
             />
           )}
 
@@ -518,25 +542,45 @@ export default function App() {
               napLogsCount={napLogs.length}
               onRestoreDemoData={handleRestoreDemoData}
               onClearForRelease={handleClearForRelease}
+              activeUser={activeUser}
+              onOpenUserAccountModal={() => setIsUserAccountModalOpen(true)}
             />
           )}
         </main>
 
-        {/* Nighttime Disruption Modal */}
         <DisruptionModal
           isOpen={isDisruptionModalOpen}
           onClose={() => setIsDisruptionModalOpen(false)}
           onSave={handleSaveDisruption}
         />
 
-        {/* Sleep Streak Log Modal */}
         <StreakModal
           isOpen={isStreakModalOpen}
           onClose={() => setIsStreakModalOpen(false)}
           streakStats={streakStats}
         />
 
-        {/* Bottom Navigation Bar */}
+        <LogForgottenSleepModal
+          isOpen={isLogPastSleepModalOpen}
+          onClose={() => setIsLogPastSleepModalOpen(false)}
+          onSave={handleLogForgottenSleep}
+          sleepGoalHours={sleepGoalHours}
+        />
+
+        <SleepTrendModal
+          isOpen={isSleepTrendModalOpen}
+          onClose={() => setIsSleepTrendModalOpen(false)}
+          sleepLogs={sleepLogs}
+          sleepGoalHours={sleepGoalHours}
+        />
+
+        <UserAccountModal
+          isOpen={isUserAccountModalOpen}
+          onClose={() => setIsUserAccountModalOpen(false)}
+          activeUser={activeUser}
+          onSelectUser={handleSelectUser}
+        />
+
         <BottomNav activeTab={activeTab} onChangeTab={setActiveTab} />
       </div>
     </div>
