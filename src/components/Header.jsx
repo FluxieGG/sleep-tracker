@@ -43,7 +43,7 @@ export default function Header({
       </button>
 
       {/* Highlighted Theme Streak Box on Tonight Header */}
-      {activeTab === 'tonight' && (
+      {activeTab === 'tonight' || activeTab === 'history'  || activeTab === 'stats'  || activeTab === 'settings' ? (
         <button
           type="button"
           onClick={onOpenStreakModal}
@@ -68,7 +68,7 @@ export default function Header({
             </span>
           </div>
         </button>
-      )}
+      ) : null}
     </header>
   )
 }
