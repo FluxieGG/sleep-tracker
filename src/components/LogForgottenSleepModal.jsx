@@ -262,7 +262,7 @@ export default function LogForgottenSleepModal({
               max={getTodayStr()}
               onChange={(e) => setDateStr(e.target.value)}
               required
-              className="w-full py-2 px-3 rounded-xl bg-slate-950/80 border border-slate-800 focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] text-white font-medium outline-none transition"
+              className="w-full py-2 px-3 rounded-xl bg-slate-950/60 border border-slate-800 focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] text-white font-medium outline-none transition"
             />
             <p className="text-[10px] text-slate-400 italic">
               Selected: <span className="text-white font-semibold">{fullDateLabel}</span>
@@ -314,7 +314,7 @@ export default function LogForgottenSleepModal({
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
                 required
-                className="w-full py-2 px-3 rounded-xl bg-slate-950/80 border border-slate-800 focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] text-white font-mono font-semibold outline-none transition"
+                className="w-full py-2 px-3 rounded-xl bg-slate-950/60 border border-slate-800 focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] text-white font-mono font-semibold outline-none transition"
               />
               {/* Quick Wake Presets */}
               <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">

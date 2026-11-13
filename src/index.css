@@ -63,3 +63,9 @@
     scrollbar-width: none;
   }
 }
+
+/* Ensure native date and time picker popups render with dark mode theme across all devices */
+input[type="date"],
+input[type="time"] {
+  color-scheme: dark;
+}
