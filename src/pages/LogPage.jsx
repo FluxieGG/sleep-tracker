@@ -7,14 +7,11 @@ import {
   CheckCircle2,
   X,
   Plus,
-  Sparkles,
   Zap,
-  History,
 } from 'lucide-react'
 import { formatDuration } from '../utils/timeUtils'
 import DeleteConfirmModal from '../components/DeleteConfirmModal'
 import LogNapModal from '../components/LogNapModal'
-import LogForgottenSleepModal from '../components/LogForgottenSleepModal'
 
 export default function LogPage({
   sleepLogs = [],
@@ -26,12 +23,10 @@ export default function LogPage({
   onDeleteNap,
   onAddNap,
   sleepGoalHours = 8,
-  onLogForgottenSleep,
 }) {
   const [activeSubTab, setActiveSubTab] = useState('sleep') // 'sleep' | 'nap'
   const [sessionPendingDelete, setSessionPendingDelete] = useState(null)
   const [isLogNapModalOpen, setIsLogNapModalOpen] = useState(false)
-  const [isLogForgottenModalOpen, setIsLogForgottenModalOpen] = useState(false)
 
   // Current list based on active sub-tab
   const isSleepTab = activeSubTab === 'sleep'
@@ -59,32 +54,6 @@ export default function LogPage({
 
   return (
     <div className="space-y-4">
-      {/* Trimmed Down Action Banner: Log Forgotten Sleep */}
-      <div className="rounded-2xl bg-slate-900/90 border border-slate-800/80 p-3 flex items-center justify-between gap-3 shadow-md">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-xl bg-[var(--accent-subtle)] border border-[var(--accent-border)] flex items-center justify-center text-[var(--accent-text)] shrink-0">
-            <History className="w-4 h-4" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-xs font-semibold text-white truncate">
-              Log Forgotten Sleep
-            </h3>
-            <p className="text-[10px] text-slate-400 truncate">
-              Recover past night & protect your streak
-            </p>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setIsLogForgottenModalOpen(true)}
-          className="py-1.5 px-3 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-btn-text)] font-semibold text-xs flex items-center gap-1.5 shadow-sm shadow-[var(--accent-shadow)] transition cursor-pointer shrink-0 active:scale-95"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          <span>Log Past Sleep</span>
-        </button>
-      </div>
-
       {/* Sub-Tabs: Sleep Log History (left) vs Nap Log History (right) */}
       <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-slate-950/80 border border-slate-800/80">
         <button
@@ -418,14 +387,6 @@ export default function LogPage({
         isOpen={isLogNapModalOpen}
         onClose={() => setIsLogNapModalOpen(false)}
         onSaveNap={handleSaveNap}
-      />
-
-      {/* Modal for recording a forgotten past sleep */}
-      <LogForgottenSleepModal
-        isOpen={isLogForgottenModalOpen}
-        onClose={() => setIsLogForgottenModalOpen(false)}
-        onSave={onLogForgottenSleep}
-        sleepGoalHours={sleepGoalHours}
       />
     </div>
   )

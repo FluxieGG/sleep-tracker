@@ -137,8 +137,8 @@ export default function LogNapModal({ isOpen, onClose, onSaveNap }) {
           </div>
 
           {/* Time & Duration */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
+          <div className="grid grid-cols-2 gap-3 min-w-0">
+            <div className="min-w-0">
               <label className="text-[11px] font-medium text-slate-400 block mb-1.5">
                 Nap Start Time
               </label>
@@ -146,12 +146,12 @@ export default function LogNapModal({ isOpen, onClose, onSaveNap }) {
                 type="time"
                 value={startTime24}
                 onChange={(e) => setStartTime24(e.target.value)}
-                className="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-[var(--accent)]"
+                className="block w-full min-w-0 max-w-full box-border appearance-none p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-[var(--accent)]"
                 required
               />
             </div>
 
-            <div>
+            <div className="min-w-0">
               <label className="text-[11px] font-medium text-slate-400 block mb-1.5">
                 Duration
               </label>

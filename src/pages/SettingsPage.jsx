@@ -12,8 +12,10 @@ import {
   ChevronUp,
   Trash2,
   CheckCircle2,
+  Users,
 } from 'lucide-react'
 import { THEMES } from '../constants/themeConstants'
+import { getUserAccount } from '../constants/userConstants'
 
 export default function SettingsPage({
   currentTheme,
@@ -24,13 +26,49 @@ export default function SettingsPage({
   napLogsCount = 0,
   onRestoreDemoData,
   onClearForRelease,
+  activeUser = 'Nyall',
+  onOpenUserAccountModal,
 }) {
   const [isEditingGoal, setIsEditingGoal] = useState(false)
   const [isDevOptionsOpen, setIsDevOptionsOpen] = useState(false)
   const [actionFeedback, setActionFeedback] = useState(null)
+
+  const userConfig = getUserAccount(activeUser)
+
   return (
     <div className="space-y-4">
-      {/* Themes Customizer Area */}
+      <div className="rounded-2xl bg-slate-900/90 border border-slate-800/80 p-4 flex items-center justify-between gap-3 shadow-md">
+        <div className="flex items-center gap-3 min-w-0">
+          <div
+            className={`w-11 h-11 rounded-full bg-gradient-to-br ${userConfig.badgeGradient} text-white font-extrabold text-base flex items-center justify-center shadow-md ring-2 ring-white/20 shrink-0`}
+          >
+            {userConfig.initial}
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-bold text-white truncate">
+                {activeUser}
+              </h3>
+              <span className="text-[10px] font-semibold px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                Active
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 truncate">
+              {userConfig.role} • 3 profiles available
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={onOpenUserAccountModal}
+          className="py-1.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 hover:text-white font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer shrink-0 active:scale-95"
+        >
+          <Users className="w-3.5 h-3.5 text-[var(--accent-text)]" />
+          <span>Switch</span>
+        </button>
+      </div>
+
       <div className="rounded-2xl bg-slate-900/90 border border-slate-800/80 p-5 space-y-3.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -44,10 +82,8 @@ export default function SettingsPage({
               </p>
             </div>
           </div>
-
         </div>
 
-        {/* 4 Theme Selectors */}
         <div className="grid grid-cols-1 gap-2.5 pt-1">
           {THEMES.map((theme) => {
             const isSelected = currentTheme === theme.id

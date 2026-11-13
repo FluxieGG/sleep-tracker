@@ -175,7 +175,7 @@ export default function LogForgottenSleepModal({
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto"
     >
-      <div className="w-full max-w-sm rounded-3xl bg-slate-900 border border-[var(--accent-border)] shadow-2xl shadow-[var(--accent-shadow)] p-5 text-slate-200 space-y-4 my-6">
+      <div className="w-full max-w-sm rounded-3xl bg-slate-900 border border-[var(--accent-border)] shadow-2xl shadow-[var(--accent-shadow)] p-5 text-slate-200 space-y-4 my-6 overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2.5">
@@ -211,9 +211,9 @@ export default function LogForgottenSleepModal({
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+        <form onSubmit={handleSubmit} className="space-y-4 text-xs min-w-0">
           {/* Date Selector */}
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 min-w-0">
             <label className="text-[11px] font-medium text-slate-300 flex items-center gap-1.5">
               <Calendar className="w-3.5 h-3.5 text-[var(--accent-text)]" />
               <span>Which night did you sleep?</span>
@@ -270,22 +270,22 @@ export default function LogForgottenSleepModal({
           </div>
 
           {/* Bedtime & Wake Time Inputs */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 min-w-0">
             {/* Start Time (Bedtime) */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 min-w-0">
               <label className="text-[11px] font-medium text-slate-300 flex items-center gap-1">
-                <Clock className="w-3 h-3 text-[var(--accent-text)]" />
-                <span>Went to Bed</span>
+                <Clock className="w-3 h-3 text-[var(--accent-text)] shrink-0" />
+                <span className="truncate">Went to Bed</span>
               </label>
               <input
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
                 required
-                className="w-full py-2 px-3 rounded-xl bg-slate-950/80 border border-slate-800 focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] text-white font-mono font-semibold outline-none transition"
+                className="block w-full min-w-0 max-w-full box-border appearance-none py-2 px-2.5 rounded-xl bg-slate-950/80 border border-slate-800 focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] text-white font-mono font-semibold outline-none transition"
               />
               {/* Quick Bedtime Presets */}
-              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
+              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 max-w-full">
                 {['22:00', '22:30', '23:00', '23:30', '00:00'].map((t) => (
                   <button
                     key={t}
@@ -304,10 +304,10 @@ export default function LogForgottenSleepModal({
             </div>
 
             {/* End Time (Wake Up) */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 min-w-0">
               <label className="text-[11px] font-medium text-slate-300 flex items-center gap-1">
-                <Clock className="w-3 h-3 text-emerald-400" />
-                <span>Woke Up</span>
+                <Clock className="w-3 h-3 text-emerald-400 shrink-0" />
+                <span className="truncate">Woke Up</span>
               </label>
               <input
                 type="time"
@@ -317,7 +317,7 @@ export default function LogForgottenSleepModal({
                 className="w-full py-2 px-3 rounded-xl bg-slate-950/60 border border-slate-800 focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] text-white font-mono font-semibold outline-none transition"
               />
               {/* Quick Wake Presets */}
-              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
+              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 max-w-full">
                 {['06:00', '06:30', '07:00', '07:30', '08:00'].map((t) => (
                   <button
                     key={t}
@@ -447,17 +447,17 @@ export default function LogForgottenSleepModal({
                   ))}
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
+                <div className="grid grid-cols-2 gap-2 min-w-0">
+                  <div className="min-w-0">
                     <label className="text-[10px] text-slate-400 block mb-1">Time</label>
                     <input
                       type="time"
                       value={disTime}
                       onChange={(e) => setDisTime(e.target.value)}
-                      className="w-full py-1.5 px-2 rounded-lg bg-slate-900 border border-slate-800 text-white font-mono text-xs outline-none"
+                      className="block w-full min-w-0 max-w-full box-border appearance-none py-1.5 px-2 rounded-lg bg-slate-900 border border-slate-800 text-white font-mono text-xs outline-none"
                     />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <label className="text-[10px] text-slate-400 block mb-1">Minutes Awake</label>
                     <input
                       type="number"
@@ -465,7 +465,7 @@ export default function LogForgottenSleepModal({
                       max={180}
                       value={disMinutes}
                       onChange={(e) => setDisMinutes(e.target.value)}
-                      className="w-full py-1.5 px-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs outline-none"
+                      className="block w-full min-w-0 max-w-full box-border py-1.5 px-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs outline-none"
                     />
                   </div>
                 </div>

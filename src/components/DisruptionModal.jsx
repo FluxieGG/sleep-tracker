@@ -83,8 +83,8 @@ export default function DisruptionModal({ isOpen, onClose, onSave }) {
           </div>
 
           {/* Time & Awake Duration Row */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
+          <div className="grid grid-cols-2 gap-3 min-w-0">
+            <div className="min-w-0">
               <label className="text-[11px] font-medium text-slate-400 block mb-1.5">
                 Time of Wake-up
               </label>
@@ -92,12 +92,12 @@ export default function DisruptionModal({ isOpen, onClose, onSave }) {
                 type="time"
                 value={disruptionTime24}
                 onChange={(e) => setDisruptionTime24(e.target.value)}
-                className="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-rose-500/50"
+                className="block w-full min-w-0 max-w-full box-border appearance-none p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-rose-500/50"
                 required
               />
             </div>
 
-            <div>
+            <div className="min-w-0">
               <label className="text-[11px] font-medium text-slate-400 block mb-1.5">
                 Time Awake
               </label>
